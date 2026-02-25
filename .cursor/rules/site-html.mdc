@@ -1,0 +1,30 @@
+---
+description: Conventions for the abelfazekas.com single-page HTML site
+alwaysApply: false
+globs: site_v7.html
+---
+
+# abelfazekas.com HTML / UX conventions
+
+- **Single-page app structure**
+  - Keep the site as one HTML file (`site_v7.html`) with multiple page sections (`.pg` containers) switched by the `go(name)` function.
+  - Reuse the shared mobile navigation overlay and JavaScript helpers when adding new sections.
+
+- **Styling**
+  - Use Tailwind utility classes plus the existing small custom CSS layer at the top of the file.
+  - Prefer extending existing patterns (e.g. `warm-body`, `agenda-body`, `work-entry`, `work-tag`) instead of inventing new ad‑hoc styles.
+  - Keep typography in the existing monospace families; avoid mixing in new font families unless there is a strong reason.
+
+- **Interaction patterns**
+  - For expandable/collapsible content (e.g. works list), follow the `work-header` + `work-detail-wrap` / `work-detail-inner` pattern so animations and icons stay consistent.
+  - For filters, reuse the `.filter-cb` and `.filter-label` pattern and update the count indicator / “no results” states as in the current Works page.
+  - When adding new pages that need nav items, wire them into both the desktop nav bars and the shared mobile overlay.
+
+- **Content & accessibility**
+  - Maintain the tone and voice used in the current bios and work descriptions; edits should keep the same level of precision and concreteness.
+  - Always set `alt` text on new images and use descriptive link text (not just “here”).
+  - Keep the “no tracking / no data collection” stance explicit in the footer.
+
+- **Meta / SEO**
+  - Keep meta description and Open Graph tags aligned with how you currently describe your practice; if the core tagline changes, update these in one place at the top of the document.
+

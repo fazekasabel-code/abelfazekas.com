@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ábel Fazekas</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+  @layer base {
+    i, em { @apply italic; }
+  }
+
+  /* ── Works page (now uses warm-body, keeping work-entry styles) ── */
+  .warm-body .work-entry { @apply border-b border-black/10 py-6 last:border-b-0; }
+
+  /* ── Agenda page ── */
+  .agenda-body {
+    font-family: 'Space Mono', monospace;
+    background-color: #f9f9f7;
+    color: #1a1a1a;
+  }
+  .agenda-body .timeline-line { width: 1px; background-color: #1a1a1a; position: absolute; left: 120px; top: 0; bottom: 0; }
+  .agenda-body .event-dot { width: 9px; height: 9px; background-color: #1a1a1a; position: absolute; left: 116px; top: 6px; border-radius: 999px; }
+  .agenda-body .past-event { opacity: 0.45; }
+  .agenda-body .agenda-past-fade {
+    mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
+  }
+  .agenda-body .nav-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .agenda-body .active-nav { text-decoration: underline; text-underline-offset: 4px; font-weight: 700; }
+
+  /* ── Warm-bg pages (Home, About, Hangzavart, Contact) ── */
+  .warm-body {
+    font-family: 'Space Mono', monospace;
+    background-color: #f9f9f7;
+    color: #1a1a1a;
+  }
+  .warm-body .nav-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .warm-body .active-nav { text-decoration: underline; text-underline-offset: 4px; font-weight: 700; }
+
+  .pg { display: none; }
+  .pg.show { display: block; }
+
+  /* ── Filter checkboxes ── */
+  .filter-cb { display: none; }
+  .filter-label {
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-cb:checked + .filter-label {
+    background: #1a1a1a !important;
+    color: #fff !important;
+    border-color: #1a1a1a !important;
+    opacity: 1 !important;
+  }
+
+  /* Focus styles for keyboard / a11y */
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     HOME (U1 — morph nav)
+     ═══════════════════════════════════════════════════════ -->
+<div class="pg show" id="pg-home">
+  <div class="relative" style="height:200vh; font-family:'Space Mono',monospace;">
+
+    <div class="sticky top-0 w-full overflow-hidden" style="height:100vh;">
+
+      <nav class="fixed top-0 left-0 w-full px-8 py-4 flex justify-between items-baseline z-50 transition-all duration-500" id="home-nav" style="background:rgba(15,15,15,0.6); backdrop-filter:blur(4px);">
+        <div class="text-lg font-bold tracking-tighter transition-colors duration-500" id="home-name" style="color:rgba(255,255,255,1);">ÁBEL FAZEKAS</div>
+        <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm uppercase tracking-wider transition-colors duration-500" id="home-links" style="color:rgba(255,255,255,0.9);">
+          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('home');return false">Home</a>
+          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('about');return false">About</a>
+          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('works');return false">Works</a>
+          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('hangzavart');return false">Hangzavart!?</a>
+          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('agenda');return false">Agenda</a>
+          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('contact');return false">Contact</a>
+        </div>
+      </nav>
+
+      <div class="absolute inset-0">
+        <img 
+          src="media/about_/240722%20Fazekas%209188%20%20002Lv2.webp" 
+          class="photo-zoomed object-cover w-full h-full min-h-full object-[center_40%]"
+          alt="Ábel Fazekas"
+        />
+      </div>
+
+      <div class="absolute inset-0 pointer-events-none" id="home-overlay" style="background:rgba(20,20,20,0);"></div>
+
+      <button type="button" id="home-scroll-hint" class="absolute left-1/2 -translate-x-1/2 bottom-6 w-8 h-8 flex items-center justify-center text-white/70 hover:text-white transition-all duration-300 pointer-events-auto cursor-pointer border-0 bg-transparent" style="font-family:'Space Mono',monospace;" aria-label="Scroll down" title="Scroll down">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+      </button>
+
+      <div class="absolute bottom-0 left-0 right-0 px-8 pb-8" id="home-content" style="opacity:0; color:#ffffff;">
+        <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-sm leading-relaxed">
+          <section>
+            <span class="block mb-4 text-[10px] tracking-widest uppercase" style="color:rgba(255,255,255,0.52);">Currently</span>
+            <p>Composing, performing, organizing. Other times film, theater, philosophy, or whatever the good life demands.</p>
+          </section>
+          <section>
+            <span class="block mb-4 text-[10px] tracking-widest uppercase" style="color:rgba(255,255,255,0.52);">Based In</span>
+            <p>Budapest &amp; Basel</p>
+          </section>
+          <section>
+            <span class="block mb-4 text-[10px] tracking-widest uppercase" style="color:rgba(255,255,255,0.52);">Recent Work</span>
+            <div class="space-y-2">
+              <p><a href="#" onclick="go('works'); setTimeout(function(){ openWork('work-father-tomb'); }, 150); return false;" class="cursor-pointer hover:opacity-80 transition-opacity inline"><i>I am the Father and Tomb of the Sky</i></a> <span style="color:rgba(255,255,255,0.52);">— 2025</span></p>
+              <p><a href="#" onclick="go('works'); setTimeout(function(){ openWork('work-thou'); }, 150); return false;" class="cursor-pointer hover:opacity-80 transition-opacity inline"><i>THOU</i></a> <span style="color:rgba(255,255,255,0.52);">— 2025–</span></p>
+              <p><a href="#" onclick="go('works'); setTimeout(function(){ openWork('work-gift-of-pain'); }, 150); return false;" class="cursor-pointer hover:opacity-80 transition-opacity inline"><i>The Gift of Pain</i></a> <span style="color:rgba(255,255,255,0.52);">— 2025</span></p>
+            </div>
+          </section>
+        </div>
+        <footer class="max-w-5xl mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-[10px] uppercase tracking-widest" style="color:rgba(255,255,255,0.48);">
+          <div>© 2026 Ábel Fazekas</div>
+          <div class="normal-case tracking-normal text-[11px] italic">This site collects no data whatsoever.</div>
+        </footer>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     ABOUT
+     ═══════════════════════════════════════════════════════ -->
+<div class="pg" id="pg-about">
+<div class="warm-body min-h-screen selection:bg-black selection:text-white">
+  <nav class="sticky top-0 z-50 bg-[#f9f9f7]/90 backdrop-blur-sm border-b border-black/10 px-8 py-4">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-baseline gap-4">
+      <div class="text-lg font-bold tracking-tighter"><a href="#" onclick="go('home');return false">ÁBEL FAZEKAS</a></div>
+      <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
+        <a class="nav-link" href="#" onclick="go('home');return false">Home</a>
+        <a class="active-nav" href="#">About</a>
+        <a class="nav-link" href="#" onclick="go('works');return false">Works</a>
+        <a class="nav-link" href="#" onclick="go('hangzavart');return false">Hangzavart!?</a>
+        <a class="nav-link" href="#" onclick="go('agenda');return false">Agenda</a>
+        <a class="nav-link" href="#" onclick="go('contact');return false">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-8 py-16">
+    <header class="mb-12">
+      <h1 class="text-3xl font-bold mb-4">About</h1>
+      <p class="text-sm border border-black inline-block px-2 py-1 mb-2 italic">composer, performer, organizer</p>
+    </header>
+
+    <div class="flex flex-wrap gap-4 mb-10 text-[10px] uppercase tracking-wider">
+      <div class="flex items-center gap-2">
+        <span class="opacity-40">Voice:</span>
+        <span class="border border-black bg-black text-white px-2 py-0.5 cursor-default">1st person</span>
+        <span class="border border-black/20 px-2 py-0.5 cursor-pointer opacity-30" title="Not yet written">3rd person</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="opacity-40">Length:</span>
+        <span id="btn-short" class="border border-black bg-black text-white px-2 py-0.5 cursor-pointer" onclick="toggleBio('short')">Short</span>
+        <span id="btn-long" class="border border-black/20 px-2 py-0.5 cursor-pointer opacity-60 hover:opacity-100" onclick="toggleBio('long')">Long</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="opacity-40">Name-dropping:</span>
+        <span class="border border-black bg-black text-white px-2 py-0.5 cursor-default">On</span>
+        <span class="border border-black/20 px-2 py-0.5 cursor-pointer opacity-30" title="Not yet written">Off</span>
+      </div>
+    </div>
+
+    <div id="bio-short" class="max-w-xl text-sm leading-relaxed space-y-4 mb-10">
+      <p>I usually do music; composing, performing, organizing. Other times film, theater, philosophy, or whatever the good life demands.</p>
+      <p>Recent works include the slowest metal music you ever heard, an apophatic oratory, and a horror-documentary about suffering as a mode of attention.</p>
+      <p>Committed to breaking institutional boundaries, I founded a non-academic music academy and, before that, established some strangely academic squats. Somehow the two aren't unrelated.</p>
+    </div>
+
+    <div id="bio-long" class="hidden max-w-xl text-sm leading-relaxed space-y-4 mb-10">
+      <p>I usually do music; composing, performing, organizing. Other times film, theater, philosophy, or whatever the good life demands.</p>
+      <p>Most of the work sits at the intersection of music, philosophy, and mathematics, often via tuning systems and feedback. Recent works include the slowest metal music you ever heard, an apophatic oratory, and five dimensional piece for five pianos.</p>
+      <p>As a performer, I play clarinets (though at this point, more research into extended techniques than standard repertoire) and I also improvise, having shared stages with Han Bennink, Fred Frith, John Duncan, Ingebrigt Håker Flaten, Jasper Stadhouders, Balázs Pándi, among others.</p>
+      <p>Beyond composition: I recently produced a horror-documentary about suffering as a mode of attention, led an artistic research series called Research Concert Cycle at Studio Loos Den Haag, contributed to a pop-science book on prime numbers, and host thematic dinner party performances. I also run somewhat notorious workshops around consensual pain, called Violence Club.</p>
+      <p>Committed to breaking institutional dichotomies, I founded Hangzavart!? in 2021 — a non-academic music academy. Think Darmstadt meets Burning Man: intensive artistic exploration, summer camp for thoughtful rebels, Erasmus+ funded. High art. Barefoot. Before that, I ran strangely academic squats with art and music students in The Hague.</p>
+    </div>
+
+    <div id="edu-short" class="border-t border-black/10 pt-6 text-sm text-black/50 space-y-1 mb-4">
+      <p>BA in Composition from The Royal Conservatory of The Hague.</p>
+      <p>MA in Composition from Musikakademie Basel.</p>
+    </div>
+    <div id="edu-long" class="hidden border-t border-black/10 pt-6 text-sm text-black/50 space-y-1 mb-4">
+      <p>BA in Composition from the Royal Conservatory of The Hague, studying with Martijn Padding, Yannis Kyriakides, Cornelis de Bondt, and Raviv Ganchrow. During those years, I also attended courses at the Institute of Sonology, the ArtScience faculty of the Royal Academy of Arts, and Leiden University.</p>
+      <p>MA in Composition from Musikakademie Basel with Johannes Kreidler and Johannes Caspar Walter. Visiting student at Schola Cantorum Basel, studying with Johannes Menke and Johannes Keller.</p>
+      <p>Over the years, I attended masterclasses with Helmut Lachenmann, Georg Friedrich Haas, Giorgio Netti, Jennifer Walshe, Peter Ablinger, Nicolas Collins, and Marc Sabat.</p>
+    </div>
+
+    <p class="text-sm text-black/40">Currently based in Budapest and Basel.</p>
+
+    <footer class="mt-32 pt-12 border-t border-black/10 text-[10px] uppercase tracking-widest text-black/40 flex justify-between">
+      <div>© 2026 Ábel Fazekas</div>
+      
+    </footer>
+  </main>
+</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     WORKS (merged, filterable)
+     ═══════════════════════════════════════════════════════ -->
+<div class="pg" id="pg-works">
+<div class="warm-body min-h-screen selection:bg-black selection:text-white">
+  <nav class="sticky top-0 z-50 bg-[#f9f9f7]/90 backdrop-blur-sm border-b border-black/10 px-8 py-4">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-baseline gap-4">
+      <div class="text-lg font-bold tracking-tighter"><a href="#" onclick="go('home');return false">ÁBEL FAZEKAS</a></div>
+      <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
+        <a class="nav-link" href="#" onclick="go('home');return false">Home</a>
+        <a class="nav-link" href="#" onclick="go('about');return false">About</a>
+        <a class="active-nav" href="#">Works</a>
+        <a class="nav-link" href="#" onclick="go('hangzavart');return false">Hangzavart!?</a>
+        <a class="nav-link" href="#" onclick="go('agenda');return false">Agenda</a>
+        <a class="nav-link" href="#" onclick="go('contact');return false">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-8 py-16">
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold mb-4">Works</h1>
+      <p class="text-sm border border-black inline-block px-2 py-1 mb-2 italic">selected works (2017–2025)</p>
+    </header>
+
+    <!-- Filter UI -->
+    <fieldset class="filters flex flex-wrap gap-3 mb-12 text-[10px] uppercase tracking-wider">
+      <input class="filter-cb" type="checkbox" id="f-composition" value="composition" onchange="filterWorks()"/>
+      <label for="f-composition" class="filter-label border border-black/30 px-3 py-1 opacity-50 hover:opacity-80 transition-all select-none">Composition</label>
+
+      <input class="filter-cb" type="checkbox" id="f-theater" value="theater" onchange="filterWorks()"/>
+      <label for="f-theater" class="filter-label border border-black/30 px-3 py-1 opacity-50 hover:opacity-80 transition-all select-none">Theater</label>
+
+      <input class="filter-cb" type="checkbox" id="f-film" value="film" onchange="filterWorks()"/>
+      <label for="f-film" class="filter-label border border-black/30 px-3 py-1 opacity-50 hover:opacity-80 transition-all select-none">Film</label>
+
+      <input class="filter-cb" type="checkbox" id="f-improvisation" value="improvisation" onchange="filterWorks()"/>
+      <label for="f-improvisation" class="filter-label border border-black/30 px-3 py-1 opacity-50 hover:opacity-80 transition-all select-none">Improvisation</label>
+      <button type="button" onclick="clearFilters()" class="text-[10px] uppercase tracking-wider border border-black/30 px-3 py-1 opacity-50 hover:opacity-80 transition-all ml-auto">Clear filters</button>
+    </fieldset>
+
+    <div id="works-no-results" class="hidden py-12 text-center text-sm text-black/50" style="display:none;">
+      <p class="mb-4">No works match this filter. Yet.</p>
+      <button type="button" onclick="clearFilters()" class="border border-black/30 px-3 py-1 text-[10px] uppercase tracking-wider hover:bg-black hover:text-white transition-colors">Clear filters</button>
+    </div>
+
+    <div class="space-y-0" id="works-list">
+
+    <!-- ── THOU ── -->
+    <section id="work-thou" class="work-entry work" data-tags="composition">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>THOU</i> (2025–)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50 mb-1">for 3 sopranos, 2 clarinets, percussion, viola, cello, and double bass — 90'</p>
+      <p class="work-short text-sm text-black/40 mt-2">An apophatic oratory for three sopranos and chamber ensemble. 90 minutes of microtonal music exploring the impossible address — the Self reaching toward an Other that cannot be named.</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <p><i>THOU</i> is an apophatic oratory for three sopranos, two clarinets, percussion, viola, cello, and double bass. The work draws on the apophatic theological tradition — the via negativa — in which the divine (or the Other) can only be approached through negation, through saying what it is not.</p>
+        <p>The music is microtonal throughout. The libretto is an original text based on cut-ups of Pseudo-Dionysius, Meister Eckhart, Levinas, Bataille, and Rimbaud.</p>
+        <p>90 minutes. Work in progress. Partially premiered June 2025, Basel.</p>
+        <div class="bg-black/[0.03] p-4 border border-black/20">
+          <p class="text-[10px] uppercase font-bold mb-2">Audio: I. Movement</p>
+          <div class="aspect-video w-full max-w-lg">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/QIXdTnK47QI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen class="w-full"></iframe>
+          </div>
+        </div>
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Conductor: Giorgi Shekiladze<br/>
+          Partial premiere: June 2025, Basel<br/>
+          Supported by Ernst Göhner Stiftung
+        </div>
+      </div>
+    </section>
+
+    <!-- ── I am the Father and Tomb of the Sky ── -->
+    <section id="work-father-tomb" class="work-entry work" data-tags="composition,improvisation">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>I am the Father and Tomb of the Sky</i> (2025)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50 mb-1">for voice, electric guitar, fretless bass, and drums — open form, 60'+</p>
+      <p class="work-short text-sm text-black/40 mt-2">A concert-length work for metal band and cut-up Bataille. Walls of noise, extended silences, controlled feedback chains, microtonal systems under heavy distortion.</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <p><i>I am the Father and Tomb of the Sky</i> is a concert-length composition written for <a href="https://lithopaedion.com" target="_blank" class="underline underline-offset-4 hover:opacity-60">Lithopaedion</a>, a Swiss ensemble formed specifically for this project. The title comes from Georges Bataille's poem "The Archangelical," and the libretto is a loose cut-up of his poetry throughout.</p>
+        <p>The piece sits at the intersection of experimental metal and contemporary composition — not as stylistic quotation but as genuine synthesis. The instrumentation resembles a standard metal band, but all four musicians are active in the international new-music scene as both performers and composers. The result: walls of noise interrupted by extended silences, tightly controlled but chaotic feedback chains, and intricate microtonal systems subjected to heavy distortion.</p>
+        <p>Open form. No fixed duration. The December 2025 premiere ran over 60 minutes.</p>
+        <div class="bg-black/[0.03] p-4 border border-black/20 space-y-3">
+          <p class="text-[10px] uppercase font-bold mb-2">EP: <i>I am the Son and the Tomb of the Sky</i></p>
+          <div class="space-y-2 text-xs">
+            <p><a href="https://youtu.be/l79FXhDocsU" target="_blank" class="underline underline-offset-4 hover:opacity-60">"and the white drool in my mouth" →</a></p>
+            <p><a href="https://youtu.be/NOoF7TzSF38" target="_blank" class="underline underline-offset-4 hover:opacity-60">"find you in the night" →</a></p>
+          </div>
+        </div>
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Ensemble: Lithopaedion — Ábel Fazekas (voice), Mikael Szafirowski (guitar), Clemens Schumacher (bass), Ivan Liuzzo (drums)<br/>
+          Premiere: December 2025, Basel
+        </div>
+      </div>
+    </section>
+
+    <!-- ── The Gift of Pain ── -->
+    <section id="work-gift-of-pain" class="work-entry work" data-tags="film">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>The Gift of Pain</i> (2025)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50 mb-1">film — horror/documentary — 69 min</p>
+      <p class="work-short text-sm text-black/40 mt-2">A Swiss horror-documentary directed by Ivan and Atanáz Babinchak. Through self-inflicted acts and wordless rituals, the film observes how suffering, stripped of meaning or justification, becomes a way of seeing.</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <p>A Swiss horror-documentary directed by Ivan and Atanáz Babinchak. Through self-inflicted acts and wordless rituals, the film observes how suffering, stripped of meaning or justification, becomes a way of seeing. Episodic in structure, devoid of dialogue, it stands between documentation and performance art. The camera's clinical yet compassionate gaze reveals pain not as spectacle or confession, but as a mode of attention. A dark hedonism runs beneath: the will to experience life in its entirety — even beyond one's own limit.</p>
+        <p>Shot in Basel (Neues Kino, Dome Tattoo, Riverside Boxing). Festival premiere at LUFF – Lausanne Underground Film Festival, October 2025.</p>
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Ábel's roles: Producer, co-writer, art direction, music, cast<br/><br/>
+          Directors: Ivan Babinchak, Atanáz Babinchak<br/>
+          Producers: Ábel Fazekas, Anouk Neyens<br/>
+          Screenplay: Ivan Babinchak, Sanna Bo, John Duncan, Ábel Fazekas, Alice Von Sinnen, Anouk Neyens, Dániel Láposi<br/>
+          Music: Ábel Fazekas, C.P.E. Bach<br/>
+          Sound Design: Emcsi<br/>
+          Cast: Ivan Babinchak, Sanna Bo, John Duncan, Ábel Fazekas, Alice Von Sinnen, Anouk Neyens, Dániel Láposi, Emcsi, Atanáz Babinchak
+        </div>
+        <div class="flex gap-4 text-xs mt-2">
+          <a href="https://youtu.be/CtR6r9WN-EE" target="_blank" class="underline underline-offset-4 hover:opacity-60">Trailer</a>
+          <a href="https://www.imdb.com/title/tt36016563/" target="_blank" class="underline underline-offset-4 hover:opacity-60">IMDB</a>
+          <a href="https://letterboxd.com/film/the-gift-of-pain/" target="_blank" class="underline underline-offset-4 hover:opacity-60">Letterboxd</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Egy tökéletes nap ── -->
+    <section class="work-entry work" data-tags="theater">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>Egy tökéletes nap</i> (2024)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50 mb-1">theater music — 150 min</p>
+      <p class="work-short text-sm text-black/40 mt-2">Music for <i>Egy tökéletes nap</i> (<i>A Perfect Day</i>), a theater production directed by Szenteczki Zita at 6SZÍN, Budapest. Premiered June 14, 2024.</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <p>The play documents the final years of Karsai Dániel (1977–2024), a constitutional lawyer diagnosed with ALS who publicly fought for end-of-life autonomy in Hungary, taking his case to the European Court of Human Rights. He co-wrote the play about his own life and death with dramaturg Bíró Bence and director Szenteczki Zita. Movement and choreography (Kovács Domokos) are central — the physical vocabulary of jiu-jitsu, which Karsai practiced, becomes a language for the body's struggle against its own collapse.</p>
+        <p>Karsai died in September 2024.</p>
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Writers: Karsai Dániel, Szenteczki Zita, Bíró Bence<br/>
+          Director: Szenteczki Zita<br/>
+          Music: Ábel Fazekas<br/>
+          Choreography: Kovács Domokos<br/>
+          Set design: Lázár Helga
+        </div>
+        <div class="flex gap-4 text-xs mt-2">
+          <a href="https://6szin.hu/repertoar/karsai_daniel__szenteczki_zita__biro_bencebregy_tokeletes_nap" target="_blank" class="underline underline-offset-4 hover:opacity-60">6szin.hu</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── The True Life is Absent ── -->
+    <section class="work-entry work" data-tags="composition">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>The True Life is Absent</i> (2023)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50 mb-1">for mezzo-soprano, clarinet/bass clarinet, and bass clarinet — 13'</p>
+      <p class="work-short text-sm text-black/40 mt-2">Medieval counterpoint meets microtonality meets extended techniques. The voice embodies the immediate realm of the I; the clarinets, those parts of the self not yet recollected or recognized. The piece unfolds this drama.</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <p><i>The True Life is Absent</i> is scored for mezzo-soprano and two bass clarinets (one doubling clarinet). The title comes from Rimbaud — "La vraie vie est absente" — a line Levinas also quotes. The libretto, written by Aisha Pagnes, draws on Levinas's 1948 essay "Reality and its Shadow."</p>
+        <p>Musically, the piece braids medieval counterpoint, microtonality, and extended techniques. The voice represents the immediate, present self — the I in the moment of its own speaking. The two clarinets figure as the unrecognized or unrecollected parts of the self, the shadow-regions that accompany but never fully appear to consciousness. The work is the unfolding encounter between these.</p>
+        <p>A technical note: the clarinet's harmonic spectrum naturally lacks the octave. Here, this absence becomes structural — the octave is treated as a false unity, a threat within the harmonic universe rather than a resolution.</p>
+        <div class="bg-black/[0.03] p-4 border border-black/20">
+          <p class="text-[10px] uppercase font-bold mb-2">Video</p>
+          <div class="aspect-video w-full max-w-lg">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/k-zVOjYn8rA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Performers: Xenia Lemberski (voice), Martijn Susla (clarinet/bass clarinet), Ábel Fazekas (bass clarinet)<br/>
+          Libretto: Aisha Pagnes<br/>
+          Premiere: June 2023, Basel
+        </div>
+      </div>
+    </section>
+
+    <!-- ── a responsible man ── -->
+    <section class="work-entry work" data-tags="composition">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>a responsible man limits himself to five dimensions</i> (2023)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50 mb-1">for five pianos in custom tuning — 14'</p>
+      <p class="work-short text-sm text-black/40 mt-2">What if harmony could be imagined in spatial terms? Five pianos explore a five-dimensional hypercube — impractical, but not <i>unreasonably</i> so.</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <p>Leonhard Euler's 1739 treatise proposed modeling harmony as a six-dimensional hypercube. A responsible person recognizes this as one dimension too many. Here, five pianos in custom tuning navigate a merely five-dimensional pitch space — still speculative, still impractical, but within the bounds of decency. Mathematical and musical terms collapse into one another: inversion is inversion, rotation is rotation. The composition is made entirely in geometric terms.</p>
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Premiere: November 2023, Musikakademie Basel (fixed media playback, all parts performed by Jacob Mason)
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Thanatos ── -->
+    <section class="work-entry work" data-tags="theater">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>Thanatos</i> (2022)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50">performance — 20'</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Performers: Alice von Sinnen, Janis<br/>
+          Music: Ábel Fazekas<br/>
+          Premiere: October 2022, Theater Basel
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Francesco d'Assis ── -->
+    <section class="work-entry work" data-tags="theater">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>Francesco d'Assis</i> (2022)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50">music theater for three voices and lute — 20'</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <p>A music theater dedicated to Charity.</p>
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Performers: Ailen Monti (lute &amp; voice), Carolina Bermejo † (voice), Aurore Gontard (voice)<br/>
+          Music: Ábel Fazekas<br/>
+          Premiere: October 2022, Theater Basel
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Studies for Qayin ── -->
+    <section class="work-entry work" data-tags="composition">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>Studies for Qayin</i> (2022)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50 mb-1">for voice, two prepared pianos, and experimentalorgel</p>
+      <p class="work-short text-sm text-black/40 mt-2">Short studies for a larger chamber work, made during a residency exploring the experimentalorgel at St. Martin, Kassel.</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <p><i>Studies for Qayin</i> is a set of short pieces composed during a residency at St. Martin Church in Kassel, exploring the possibilities of their recently built experimentalorgel. The studies serve as preparation for a longer chamber work, <i>Qayin</i>, yet to be realized.</p>
+        <div class="bg-black/[0.03] p-4 border border-black/20">
+          <p class="text-[10px] uppercase font-bold mb-2">Audio: Study No. 3</p>
+          <audio class="w-full h-8 opacity-80 contrast-125" controls>
+            <source src="#" type="audio/mpeg"/>
+          </audio>
+        </div>
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Premiere: 2022, St. Martin Church, Kassel
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Cinnabar ── -->
+    <section class="work-entry work" data-tags="composition">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>Cinnabar</i> (2021)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50">for voice, two intonarumori, and two percussion — 5'</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Premiere: 2021, Tinguely Museum, Basel
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Over Against Other ── -->
+    <section class="work-entry work" data-tags="composition">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>Over Against Other</i> (2020)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50">for flute and percussion — 20'</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Commissioned by Dániel Láposi and Kristóf Siklósi<br/>
+          Premiere: 2020, Amadinda Studio
+        </div>
+      </div>
+    </section>
+
+    <!-- ── for the Royal Trash Ensemble ── -->
+    <section class="work-entry work" data-tags="theater">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>for the Royal Trash Ensemble</i> (2018)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50">music theater — 18'</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <div class="bg-black/[0.03] p-4 border border-black/20">
+          <p class="text-[10px] uppercase font-bold mb-2">Video</p>
+          <div class="aspect-video w-full max-w-lg">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/6HoFvDvCBgw" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Organo Trio ── -->
+    <section class="work-entry work" data-tags="improvisation">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>Organo Trio</i> (2018)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50">free improvisation</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <p>We first started playing together sometime in early 2017 when we met as students at The Royal Conservatory of The Hague. The three of us share a long history in both improvisation and composition, and it's the combination of these two approaches to music-making that continues to serve us as a basis for all our musical ideas. In our self-titled debut album <i>Organo</i> we didn't use pre-agreed forms or musical material, but nevertheless our improvisation cannot be said to be totally free either. Through constant reflection and discussion when rehearsing, we 'composed' a quite strict and distinct musical universe within which we could improvise 'freely'. <i>Organo</i> is an edited and mixed version of our very first studio recording session.</p>
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Personnel: Aurélie Nyirabikali Lierman (OrganoVoice), Ábel Fazekas (bass clarinet), Riccardo Marogna (bass clarinet)<br/>
+          Recording, Mixing, Mastering: Madhav Agarwal<br/>
+          Cover Photo: Riccardo Marogna<br/>
+          Released: December 18, 2018
+        </div>
+        <div class="flex gap-4 text-xs mt-2">
+          <a href="https://organo.bandcamp.com/album/organo" target="_blank" class="underline underline-offset-4 hover:opacity-60">Bandcamp →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 651237284 ── -->
+    <section class="work-entry work" data-tags="composition">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>651237284</i> (2018)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50">fixed media — 10'</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <div class="bg-black/[0.03] p-4 border border-black/20">
+          <p class="text-[10px] uppercase font-bold mb-2">Video</p>
+          <div class="aspect-video w-full max-w-lg">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/mkWIL4o5Bcc" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Performers: Robert Landfermann (double bass), Cody Takacs (double bass)
+        </div>
+      </div>
+    </section>
+
+    <!-- ── please, come onto the stage and save me ── -->
+    <section class="work-entry work" data-tags="composition,theater">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>please, come onto the stage and save me</i> (2018)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50">text score</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <div class="bg-black/[0.03] p-4 border border-black/20">
+          <p class="text-[10px] uppercase font-bold mb-2">Video</p>
+          <div class="aspect-video w-full max-w-lg">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/Z58JYKSNioc" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Vocal Project ── -->
+    <section class="work-entry work" data-tags="composition">
+      <div class="flex justify-between items-baseline mb-2">
+        <h2 class="text-lg"><i>Vocal Project</i> (2017)</h2>
+        <span class="text-xs border border-black/20 px-2 py-0.5 uppercase cursor-pointer hover:bg-black hover:text-white transition-colors select-none" onclick="toggleWork(this)">View details</span>
+      </div>
+      <p class="text-sm text-black/50">graphic score + live electronics — 7'</p>
+      <div class="work-detail hidden mt-6 space-y-4 max-w-2xl text-sm border-l-2 border-black/10 pl-6 py-2">
+        <div class="bg-black/[0.03] p-4 border border-black/20">
+          <p class="text-[10px] uppercase font-bold mb-2">Video</p>
+          <div class="aspect-video w-full max-w-lg">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/SOqeHpl0oB4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+        </div>
+        <div class="text-[10px] text-black/30 uppercase leading-relaxed">
+          Performers: Rutger de Groot (voice), Ábel Fazekas (composition &amp; electronics)<br/>
+          Premiere: February 2017, Royal Conservatory of The Hague, Arnold Schoenbergzaal
+        </div>
+      </div>
+    </section>
+
+    </div>
+
+    <footer class="mt-32 pt-12 border-t border-black/10 text-[10px] uppercase tracking-widest text-black/40 flex justify-between">
+      <div>© 2026 Ábel Fazekas</div>
+    </footer>
+  </main>
+</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     HANGZAVART!?
+     ═══════════════════════════════════════════════════════ -->
+<div class="pg" id="pg-hangzavart">
+<div class="warm-body min-h-screen selection:bg-black selection:text-white">
+  <nav class="sticky top-0 z-50 bg-[#f9f9f7]/90 backdrop-blur-sm border-b border-black/10 px-8 py-4">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-baseline gap-4">
+      <div class="text-lg font-bold tracking-tighter"><a href="#" onclick="go('home');return false">ÁBEL FAZEKAS</a></div>
+      <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
+        <a class="nav-link" href="#" onclick="go('home');return false">Home</a>
+        <a class="nav-link" href="#" onclick="go('about');return false">About</a>
+        <a class="nav-link" href="#" onclick="go('works');return false">Works</a>
+        <a class="active-nav" href="#">Hangzavart!?</a>
+        <a class="nav-link" href="#" onclick="go('agenda');return false">Agenda</a>
+        <a class="nav-link" href="#" onclick="go('contact');return false">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-8 py-16">
+    <header class="mb-12">
+      <h1 class="text-3xl font-bold mb-4">Hangzavart!?</h1>
+      <p class="text-sm border border-black inline-block px-2 py-1 mb-2 italic">a non-academic music academy</p>
+    </header>
+
+    <div class="max-w-xl text-sm leading-relaxed space-y-4 mb-10">
+      <p>Hangzavart!? is a non-academic music academy — "a laboratory for music education" — founded by Ábel in 2021. It brings together musicians from all backgrounds to challenge norms, dissolve hierarchies, and explore new ways of learning and creating.</p>
+      <p>Think Darmstadt Summer Course meets Burning Man: intensive artistic exploration within a community that feels like summer camp for thoughtful rebels. The network has grown through Erasmus+ partnerships across Europe.</p>
+      <p class="font-bold">High art. Barefoot.</p>
+    </div>
+
+    <div class="border-t border-black/10 pt-6">
+      <p class="text-[10px] uppercase tracking-widest opacity-40 mb-2">More info</p>
+      <a href="https://hangzavart.com" target="_blank" class="text-sm underline underline-offset-4 hover:opacity-60">hangzavart.com →</a>
+    </div>
+
+    <footer class="mt-32 pt-12 border-t border-black/10 text-[10px] uppercase tracking-widest text-black/40 flex justify-between">
+      <div>© 2026 Ábel Fazekas</div>
+      
+    </footer>
+  </main>
+</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     AGENDA
+     ═══════════════════════════════════════════════════════ -->
+<div class="pg" id="pg-agenda">
+<div class="agenda-body min-h-screen selection:bg-black selection:text-white">
+
+  <nav class="sticky top-0 z-50 bg-[#f9f9f7]/90 backdrop-blur-sm border-b border-black/10 px-8 py-4">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-baseline gap-4">
+      <div class="text-lg font-bold tracking-tighter"><a href="#" onclick="go('home');return false">ÁBEL FAZEKAS</a></div>
+      <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
+        <a class="nav-link" href="#" onclick="go('home');return false">Home</a>
+        <a class="nav-link" href="#" onclick="go('about');return false">About</a>
+        <a class="nav-link" href="#" onclick="go('works');return false">Works</a>
+        <a class="nav-link" href="#" onclick="go('hangzavart');return false">Hangzavart!?</a>
+        <a class="active-nav" href="#">Agenda</a>
+        <a class="nav-link" href="#" onclick="go('contact');return false">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-8 py-16">
+    <header class="mb-16">
+      <h1 class="text-3xl font-bold mb-4">Agenda</h1>
+    </header>
+
+    <section class="relative">
+      <div class="timeline-line hidden md:block"></div>
+
+      <div class="space-y-12">
+        <div class="relative flex flex-col md:flex-row gap-2 md:gap-0">
+          <div class="md:w-[120px] shrink-0 text-sm md:text-right md:pr-10 font-bold pt-1">Mar 2026</div>
+          <div class="event-dot hidden md:block"></div>
+          <div class="md:pl-10 max-w-xl">
+            <h3 class="text-lg font-bold leading-tight"><i>The Gift of Pain</i> — US Premiere</h3>
+            <p class="text-sm mt-1">(TBA)</p>
+            <p class="text-xs uppercase tracking-widest mt-2">Los Angeles, US</p>
+            <p class="text-sm mt-2"><a href="https://www.experimentalforum.org/2026" target="_blank" rel="noopener noreferrer" class="underline hover:no-underline">Experimental Forum</a></p>
+          </div>
+        </div>
+
+        <div class="my-10 border-t border-black/15"></div>
+
+        <div class="agenda-past-fade space-y-12">
+        <div class="relative flex flex-col md:flex-row gap-2 md:gap-0 past-event">
+          <div class="md:w-[120px] shrink-0 text-sm md:text-right md:pr-10 font-bold pt-1">29 Nov 2025</div>
+          <div class="event-dot hidden md:block"></div>
+          <div class="md:pl-10 max-w-xl">
+            <h3 class="text-lg font-bold leading-tight">Interdiszciplináris Metal Konferencia — Conference Presentation</h3>
+            <p class="text-sm mt-1">ELTE Esztétika Tanszék</p>
+            <p class="text-xs uppercase tracking-widest mt-2">Budapest, HU</p>
+            <p class="text-sm mt-2"><a href="https://www.elte.hu/content/i-interdiszciplinaris-metal-konferencia.e.19195" target="_blank" rel="noopener noreferrer" class="underline hover:no-underline">Event info</a></p>
+          </div>
+        </div>
+
+        <div class="relative flex flex-col md:flex-row gap-2 md:gap-0 past-event">
+          <div class="md:w-[120px] shrink-0 text-sm md:text-right md:pr-10 font-bold pt-1">17–18 Nov 2025</div>
+          <div class="event-dot hidden md:block"></div>
+          <div class="md:pl-10 max-w-xl">
+            <h3 class="text-lg font-bold leading-tight"><i>The Gift of Pain</i> — Premiere</h3>
+            <p class="text-sm mt-1">Lausanne Underground Film Festival</p>
+            <p class="text-xs uppercase tracking-widest mt-2">Lausanne, CH</p>
+            <p class="text-sm mt-2"><a href="https://2025.luff.ch/en/programme/film/documentaires/the-gift-of-pain/" target="_blank" rel="noopener noreferrer" class="underline hover:no-underline">LUFF 2025</a></p>
+          </div>
+        </div>
+
+        <div class="relative flex flex-col md:flex-row gap-2 md:gap-0 past-event">
+          <div class="md:w-[120px] shrink-0 text-sm md:text-right md:pr-10 font-bold pt-1">14 Jun 2025</div>
+          <div class="event-dot hidden md:block"></div>
+          <div class="md:pl-10 max-w-xl">
+            <h3 class="text-lg font-bold leading-tight"><i>THOU</i> — First Movement</h3>
+            <p class="text-xs uppercase tracking-widest mt-2">Kartäuserkirche, Basel, CH</p>
+          </div>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mt-32 pt-12 border-t border-black/10 text-[10px] uppercase tracking-widest text-black/40 flex justify-between pb-12">
+      <div>© 2026 Ábel Fazekas</div>
+
+    </footer>
+  </main>
+</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     CONTACT
+     ═══════════════════════════════════════════════════════ -->
+<div class="pg" id="pg-contact">
+<div class="warm-body min-h-screen selection:bg-black selection:text-white">
+  <nav class="sticky top-0 z-50 bg-[#f9f9f7]/90 backdrop-blur-sm border-b border-black/10 px-8 py-4">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-baseline gap-4">
+      <div class="text-lg font-bold tracking-tighter"><a href="#" onclick="go('home');return false">ÁBEL FAZEKAS</a></div>
+      <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
+        <a class="nav-link" href="#" onclick="go('home');return false">Home</a>
+        <a class="nav-link" href="#" onclick="go('about');return false">About</a>
+        <a class="nav-link" href="#" onclick="go('works');return false">Works</a>
+        <a class="nav-link" href="#" onclick="go('hangzavart');return false">Hangzavart!?</a>
+        <a class="nav-link" href="#" onclick="go('agenda');return false">Agenda</a>
+        <a class="active-nav" href="#">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-8 py-16">
+    <header class="mb-16">
+      <h1 class="text-3xl font-bold mb-4">Contact</h1>
+      <p class="text-sm border border-black inline-block px-2 py-1 mb-2 italic">get in touch</p>
+    </header>
+
+    <div class="space-y-8 max-w-md">
+      <div>
+        <p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Email</p>
+        <a href="mailto:hello@abelfazekas.com" class="text-base underline underline-offset-4 hover:opacity-70">hello@abelfazekas.com</a>
+      </div>
+      <div>
+        <p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Based in</p>
+        <p class="text-base">Budapest &amp; Basel</p>
+      </div>
+    </div>
+
+    <footer class="mt-32 pt-12 border-t border-black/10 text-[10px] uppercase tracking-widest text-black/40 flex justify-between">
+      <div>© 2026 Ábel Fazekas</div>
+      
+    </footer>
+  </main>
+</div>
+</div>
+
+
+<script>
+// TODO (later): Ensure all external links use target="_blank" and rel="noopener noreferrer"
+// TODO (later): Mobile nav refinement (smaller font / spacing on small viewports)
+
+function go(name) {
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('show'));
+  document.getElementById('pg-' + name).classList.add('show');
+  window.scrollTo(0, 0);
+  document.body.style.background = (name === 'home') ? '#111111' : '#f9f9f7';
+  // Reset home scroll state and U1 morph nav
+  const hn = document.getElementById('home-nav');
+  const hname = document.getElementById('home-name');
+  const hlinks = document.getElementById('home-links');
+  const ho = document.getElementById('home-overlay');
+  const hc = document.getElementById('home-content');
+  if (hn) { hn.style.background = 'rgba(15,15,15,0.6)'; hn.style.borderBottom = 'none'; }
+  if (hname) hname.style.color = 'rgba(255,255,255,1)';
+  if (hlinks) hlinks.style.color = 'rgba(255,255,255,0.9)';
+  if (ho) ho.style.background = 'rgba(20,20,20,0)';
+  if (hc) { hc.style.opacity = '0'; hc.style.transform = 'translateY(30px)'; hc.style.pointerEvents = 'none'; }
+  const hint = document.getElementById('home-scroll-hint');
+  if (hint && name === 'home') { hint.style.opacity = '1'; hint.style.pointerEvents = 'auto'; }
+  if (name === 'home') { homeTargetP = 0; homeDisplayP = 0; }
+}
+
+function toggleWork(el) {
+  const entry = el.closest('.work-entry') || el.closest('section');
+  const detail = entry.querySelector('.work-detail');
+  const shortDesc = entry.querySelector('.work-short');
+  if (!detail) return;
+  const isHidden = detail.classList.contains('hidden');
+  if (isHidden) {
+    detail.classList.remove('hidden');
+    if (shortDesc) shortDesc.classList.add('hidden');
+    el.textContent = 'Hide details';
+    el.className = el.className.replace('border-black/20', 'border-black').replace('hover:bg-black hover:text-white', '');
+  } else {
+    detail.classList.add('hidden');
+    if (shortDesc) shortDesc.classList.remove('hidden');
+    el.textContent = 'View details';
+    el.className = el.className.replace('border-black', 'border-black/20');
+    if (!el.className.includes('hover:bg-black')) {
+      el.className += ' hover:bg-black hover:text-white';
+    }
+  }
+}
+
+function openWork(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const btn = el.querySelector('span[onclick*="toggleWork"]');
+  const detail = el.querySelector('.work-detail');
+  if (detail && detail.classList.contains('hidden') && btn) toggleWork(btn);
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function filterWorks() {
+  const checkboxes = document.querySelectorAll('.filter-cb');
+  const works = document.querySelectorAll('#works-list .work');
+  const noResults = document.getElementById('works-no-results');
+  const worksList = document.getElementById('works-list');
+  const checked = [...checkboxes].filter(cb => cb.checked).map(cb => cb.value);
+  let visible = 0;
+  works.forEach(work => {
+    const tags = work.dataset.tags.split(',');
+    const show = checked.length === 0 || checked.some(c => tags.includes(c));
+    work.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  if (noResults && worksList) {
+    noResults.style.display = visible === 0 ? 'block' : 'none';
+    worksList.style.display = visible === 0 ? 'none' : '';
+  }
+}
+
+function clearFilters() {
+  document.querySelectorAll('.filter-cb').forEach(cb => { cb.checked = false; });
+  filterWorks();
+}
+
+function toggleBio(mode) {
+  const bs = document.getElementById('bio-short');
+  const bl = document.getElementById('bio-long');
+  const es = document.getElementById('edu-short');
+  const el2 = document.getElementById('edu-long');
+  const btnS = document.getElementById('btn-short');
+  const btnL = document.getElementById('btn-long');
+  if (mode === 'long') {
+    bs.classList.add('hidden'); bl.classList.remove('hidden');
+    es.classList.add('hidden'); el2.classList.remove('hidden');
+    btnL.className = 'border border-black bg-black text-white px-2 py-0.5 cursor-pointer';
+    btnS.className = 'border border-black/20 px-2 py-0.5 cursor-pointer opacity-60 hover:opacity-100';
+  } else {
+    bl.classList.add('hidden'); bs.classList.remove('hidden');
+    el2.classList.add('hidden'); es.classList.remove('hidden');
+    btnS.className = 'border border-black bg-black text-white px-2 py-0.5 cursor-pointer';
+    btnL.className = 'border border-black/20 px-2 py-0.5 cursor-pointer opacity-60 hover:opacity-100';
+  }
+}
+
+
+function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+// Smooth scroll-driven transition: scroll sets target, rAF interpolates display progress
+const homeScrollMax = () => window.innerHeight * 0.8;
+let homeTargetP = 0;
+let homeDisplayP = 0;
+const homeSmoothFactor = 0.12; // higher = snappier, lower = more continuous
+
+window.addEventListener('scroll', () => {
+  const homePg = document.getElementById('pg-home');
+  if (!homePg || !homePg.classList.contains('show')) return;
+  const scrollY = window.scrollY;
+  homeTargetP = clamp(scrollY / homeScrollMax(), 0, 1);
+}, { passive: true });
+
+function tickHomeTransition() {
+  const homePg = document.getElementById('pg-home');
+  const nav = document.getElementById('home-nav');
+  const nameEl = document.getElementById('home-name');
+  const linksEl = document.getElementById('home-links');
+  const overlay = document.getElementById('home-overlay');
+  const content = document.getElementById('home-content');
+  const hint = document.getElementById('home-scroll-hint');
+
+  if (!homePg || !homePg.classList.contains('show')) {
+    requestAnimationFrame(tickHomeTransition);
+    return;
+  }
+
+  homeDisplayP += (homeTargetP - homeDisplayP) * homeSmoothFactor;
+  if (Math.abs(homeTargetP - homeDisplayP) < 0.001) homeDisplayP = homeTargetP;
+
+  const p = homeDisplayP;
+  const cp = clamp((p - 0.3) / 0.5, 0, 1);
+
+  if (nav) {
+    const navAlpha = lerp(0.6, 0.9, p);
+    const r = Math.round(lerp(15, 249, p));
+    const g = Math.round(lerp(15, 249, p));
+    const b = Math.round(lerp(15, 247, p));
+    nav.style.background = `rgba(${r},${g},${b},${navAlpha})`;
+    nav.style.borderBottom = `1px solid rgba(${Math.round(lerp(255, 0, p))},${Math.round(lerp(255, 0, p))},${Math.round(lerp(255, 0, p))},0.1)`;
+    if (nameEl) {
+      const tb = Math.round(lerp(255, 26, p));
+      nameEl.style.color = `rgba(${tb},${tb},${tb},${lerp(1, 1, p)})`;
+    }
+    if (linksEl) {
+      const tb = Math.round(lerp(255, 26, p));
+      linksEl.style.color = `rgba(${tb},${tb},${tb},${lerp(0.9, 1, p)})`;
+    }
+  }
+  if (overlay) overlay.style.background = `rgba(20,20,20,${p * 0.8})`;
+  if (content) {
+    content.style.opacity = cp;
+    content.style.transform = `translateY(${(1 - cp) * 30}px)`;
+    content.style.pointerEvents = cp > 0.5 ? 'auto' : 'none';
+  }
+  if (hint) {
+    hint.style.opacity = String(1 - p);
+    hint.style.pointerEvents = p > 0.5 ? 'none' : 'auto';
+  }
+
+  requestAnimationFrame(tickHomeTransition);
+}
+tickHomeTransition();
+
+// Snap to top or bottom when scroll ends (avoid stuck in-between)
+function snapHomeScroll() {
+  const homePg = document.getElementById('pg-home');
+  if (!homePg || !homePg.classList.contains('show')) return;
+  const scrollY = window.scrollY;
+  const max = homeScrollMax();
+  const p = clamp(scrollY / max, 0, 1);
+  if (p > 0.22 && p < 0.78) {
+    const target = p < 0.5 ? 0 : max;
+    window.scrollTo({ top: target, behavior: 'smooth' });
+  }
+}
+let scrollEndTimer = 0;
+window.addEventListener('scroll', () => {
+  clearTimeout(scrollEndTimer);
+  scrollEndTimer = setTimeout(snapHomeScroll, 120);
+}, { passive: true });
+window.addEventListener('scrollend', snapHomeScroll);
+
+document.getElementById('home-scroll-hint')?.addEventListener('click', () => {
+  window.scrollTo({ top: homeScrollMax(), behavior: 'smooth' });
+});
+
+document.body.style.background = '#111111';
+</script>
+
+</body>
+</html>
