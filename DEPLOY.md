@@ -2,7 +2,7 @@
 
 ## What’s set up
 
-- **Entry point:** `index.html` (same content as `site_v7.html`). GitHub Pages serves it at the root, so https://abelfazekas.com loads the site.
+- **Entry point:** `index.html`. GitHub Pages serves it at the root, so https://abelfazekas.com loads the site.
 - **Custom domain:** `CNAME` in the repo root contains `abelfazekas.com`. In GitHub: **Settings → Pages → Custom domain** set to `abelfazekas.com` (and “Enforce HTTPS” when available).
 - **Static only:** `.nojekyll` in root so GitHub doesn’t run Jekyll (no special processing).
 
@@ -21,12 +21,7 @@ See [GitHub’s custom domain docs](https://docs.github.com/en/pages/configuring
 
 ## Updating the site
 
-- Edit **`site_v7.html`** (canonical source), then copy it to **`index.html`** before committing and pushing:
-  ```bash
-  cp site_v7.html index.html
-  git add index.html site_v7.html && git commit -m "update site" && git push origin main
-  ```
-- Or edit **`index.html`** directly; keep `site_v7.html` in sync if you use it as a backup.
+- Edit **`index.html`** (single source), then commit and push. For major redesigns you can create a working file (e.g. `site_v8.html`), then replace `index.html` when ready.
 
 ## After push
 
