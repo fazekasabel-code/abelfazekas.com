@@ -17,6 +17,19 @@
     i, em { @apply italic; }
   }
 
+  /* ── Global scrollbar: "Ruled Margin" ── */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #1a1a1a #e8e8e4;
+  }
+  *::-webkit-scrollbar { width: 6px; height: 6px; }
+  *::-webkit-scrollbar-track {
+    background: #e8e8e4;
+    border-left: 1px solid rgba(0,0,0,0.06);
+  }
+  *::-webkit-scrollbar-thumb { background: #1a1a1a; }
+  *::-webkit-scrollbar-thumb:hover { background: #000; }
+
   /* ── Page transitions ── */
   .pg { display: none; opacity: 0; }
   .pg.show { display: block; animation: fadeIn 0.3s ease forwards; }
@@ -109,9 +122,79 @@
     outline: 2px solid currentColor;
     outline-offset: 2px;
   }
+
+  /* ── Photo gallery: scrollable row (large thumbs, horizontal scroll) ── */
+  .gallery-row {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding: 1rem 0 1.25rem 0;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    /* Custom scrollbar: inherits global "Ruled Margin" style */
+    scrollbar-width: thin;
+    scrollbar-color: #1a1a1a #e8e8e4;
+  }
+  .gallery-row::-webkit-scrollbar {
+    height: 6px;
+  }
+  .gallery-row::-webkit-scrollbar-track {
+    background: #e8e8e4;
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+  .gallery-row::-webkit-scrollbar-thumb {
+    background: #1a1a1a;
+  }
+  .gallery-row::-webkit-scrollbar-thumb:hover {
+    background: #000;
+  }
+  .gallery-row figure {
+    flex: 0 0 auto;
+    width: min(320px, 85vw);
+    min-height: 200px;
+    scroll-snap-align: start;
+  }
+  .gallery-row img {
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .gallery-row img:hover { opacity: 0.85; }
+
+  /* ── Lightbox ── */
+  #lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0,0,0,0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  #lightbox.show { display: flex; }
+  #lightbox img { max-width: 100%; max-height: 95vh; object-fit: contain; }
+  #lightbox button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 0.5rem;
+  }
 </style>
 </head>
 <body>
+
+<!-- Lightbox for gallery images -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged image">
+  <button type="button" onclick="closeLightbox()" aria-label="Close">&times;</button>
+  <img id="lightbox-img" src="" alt=""/>
+</div>
 
 <!-- ═══════════════════════════════════════════════════════
      HOME
@@ -404,7 +487,7 @@
             <p>The music is microtonal throughout. The libretto is an original text based on cut-ups of Pseudo-Dionysius, Meister Eckhart, Levinas, Bataille, and Rimbaud.</p>
             <p>90 minutes. Work in progress. Partially premiered June 2025, Basel.</p>
             <div class="bg-black/[0.03] p-4 border border-black/20">
-              <p class="text-[10px] uppercase font-bold mb-2">Audio: I. Movement</p>
+              <p class="text-[10px] uppercase font-bold mb-2">Video: I. Movement</p>
               <div class="aspect-video w-full max-w-lg">
                 <iframe width="100%" height="100%" src="https://www.youtube.com/embed/QIXdTnK47QI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" title="THOU — I. Movement" class="w-full"></iframe>
               </div>
@@ -558,16 +641,30 @@
               Music: Ábel Fazekas<br/>
               Premiere: October 2022, Theater Basel
             </div>
+            <div class="gallery-row">
+              <figure class="bg-black/[0.03] border border-black/10 overflow-hidden">
+                <img src="media/works_thanatos/thanatos_1.png" alt="Thanatos performance still 1" class="w-full h-full object-cover" onclick="openLightbox(thanatosItems, 0)"/>
+              </figure>
+              <figure class="bg-black/[0.03] border border-black/10 overflow-hidden">
+                <img src="media/works_thanatos/thanatos_2.png" alt="Thanatos performance still 2" class="w-full h-full object-cover" onclick="openLightbox(thanatosItems, 1)"/>
+              </figure>
+              <figure class="bg-black/[0.03] border border-black/10 overflow-hidden">
+                <img src="media/works_thanatos/thanatos_3.png" alt="Thanatos performance still 3" class="w-full h-full object-cover" onclick="openLightbox(thanatosItems, 2)"/>
+              </figure>
+              <figure class="bg-black/[0.03] border border-black/10 overflow-hidden">
+                <img src="media/works_thanatos/thanatos_4.png" alt="Thanatos performance still 4" class="w-full h-full object-cover" onclick="openLightbox(thanatosItems, 3)"/>
+              </figure>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ── Francesco d'Assis ── -->
+    <!-- ── Laudanum ── -->
     <section class="work-entry work" data-tags="theater">
       <div class="work-header flex justify-between items-baseline mb-2" onclick="toggleWork(this)">
         <div>
-          <h2 class="text-lg work-title inline"><i>Francesco d'Assis</i> <span class="text-black/40">(2022)</span></h2>
+          <h2 class="text-lg work-title inline"><i>Laudanum</i> <span class="text-black/40">(2022)</span></h2>
           <span class="work-tag work-tag-theater ml-2 hidden md:inline">Theater</span>
         </div>
         <span class="work-toggle-icon text-lg text-black/30 select-none shrink-0 ml-4" aria-hidden="true">+</span>
@@ -581,6 +678,23 @@
               Performers: Ailen Monti (lute &amp; voice), Carolina Bermejo † (voice), Aurore Gontard (voice)<br/>
               Music: Ábel Fazekas<br/>
               Premiere: October 2022, Theater Basel
+            </div>
+            <div class="gallery-row">
+              <figure class="bg-black/[0.03] border border-black/10 overflow-hidden">
+                <img src="media/works_laudanum/laudanum_1.jpg" alt="Laudanum performance still 1" class="w-full h-full object-cover" onclick="openLightbox(laudanumItems, 0)"/>
+              </figure>
+              <figure class="bg-black/[0.03] border border-black/10 overflow-hidden">
+                <img src="media/works_laudanum/laudanum_2.png" alt="Laudanum performance still 2" class="w-full h-full object-cover" onclick="openLightbox(laudanumItems, 1)"/>
+              </figure>
+              <figure class="bg-black/[0.03] border border-black/10 overflow-hidden">
+                <img src="media/works_laudanum/laudanum_3.png" alt="Laudanum performance still 3" class="w-full h-full object-cover" onclick="openLightbox(laudanumItems, 2)"/>
+              </figure>
+              <figure class="bg-black/[0.03] border border-black/10 overflow-hidden">
+                <img src="media/works_laudanum/laudanum_4.png" alt="Laudanum performance still 4" class="w-full h-full object-cover" onclick="openLightbox(laudanumItems, 3)"/>
+              </figure>
+              <figure class="bg-black/[0.03] border border-black/10 overflow-hidden">
+                <img src="media/works_laudanum/laudanum_5.png" alt="Laudanum performance still 5" class="w-full h-full object-cover" onclick="openLightbox(laudanumItems, 4)"/>
+              </figure>
             </div>
           </div>
         </div>
@@ -1032,6 +1146,21 @@
 
 
 <script>
+// Gallery data for lightbox prev/next
+var thanatosItems = [
+  {src:'media/works_thanatos/thanatos_1.png',alt:'Thanatos performance still 1'},
+  {src:'media/works_thanatos/thanatos_2.png',alt:'Thanatos performance still 2'},
+  {src:'media/works_thanatos/thanatos_3.png',alt:'Thanatos performance still 3'},
+  {src:'media/works_thanatos/thanatos_4.png',alt:'Thanatos performance still 4'}
+];
+var laudanumItems = [
+  {src:'media/works_laudanum/laudanum_1.jpg',alt:'Laudanum performance still 1'},
+  {src:'media/works_laudanum/laudanum_2.png',alt:'Laudanum performance still 2'},
+  {src:'media/works_laudanum/laudanum_3.png',alt:'Laudanum performance still 3'},
+  {src:'media/works_laudanum/laudanum_4.png',alt:'Laudanum performance still 4'},
+  {src:'media/works_laudanum/laudanum_5.png',alt:'Laudanum performance still 5'}
+];
+
 // ── Email obfuscation ──
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-email-local]').forEach(el => {
@@ -1266,13 +1395,65 @@ document.getElementById('home-scroll-hint')?.addEventListener('click', () => {
   window.scrollTo({ top: homeScrollMax(), behavior: 'smooth' });
 });
 
-// Keyboard: Escape closes mobile nav
+// Keyboard: Escape closes mobile nav or lightbox; Left/Right move in lightbox
 document.addEventListener('keydown', (e) => {
+  const lb = document.getElementById('lightbox');
+  if (lb && lb.classList.contains('show')) {
+    if (e.key === 'Escape') { closeLightbox(); return; }
+    if (e.key === 'ArrowLeft') { lightboxPrev(); return; }
+    if (e.key === 'ArrowRight') { lightboxNext(); return; }
+  }
   if (e.key === 'Escape') {
     const overlay = document.getElementById('mobile-nav-overlay');
     if (overlay.classList.contains('mobile-nav-open')) toggleMobileNav();
   }
 });
+
+// Lightbox for gallery images (items = array of { src, alt }, index = current)
+var _lightboxItems = [];
+var _lightboxIndex = 0;
+
+function openLightbox(srcOrItems, altOrIndex, items, index) {
+  if (Array.isArray(srcOrItems)) {
+    _lightboxItems = srcOrItems;
+    _lightboxIndex = Math.max(0, Math.min(altOrIndex ?? 0, _lightboxItems.length - 1));
+  } else {
+    _lightboxItems = items || [{ src: srcOrItems, alt: altOrIndex || 'Enlarged image' }];
+    _lightboxIndex = Math.max(0, Math.min(index ?? 0, _lightboxItems.length - 1));
+  }
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lightbox-img');
+  if (lb && img) {
+    img.src = _lightboxItems[_lightboxIndex].src;
+    img.alt = _lightboxItems[_lightboxIndex].alt;
+    lb.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function lightboxShowIndex(i) {
+  if (i < 0 || i >= _lightboxItems.length) return;
+  _lightboxIndex = i;
+  const img = document.getElementById('lightbox-img');
+  if (img) { img.src = _lightboxItems[_lightboxIndex].src; img.alt = _lightboxItems[_lightboxIndex].alt; }
+}
+
+function lightboxPrev() {
+  if (_lightboxItems.length <= 1) return;
+  lightboxShowIndex(_lightboxIndex === 0 ? _lightboxItems.length - 1 : _lightboxIndex - 1);
+}
+
+function lightboxNext() {
+  if (_lightboxItems.length <= 1) return;
+  lightboxShowIndex(_lightboxIndex === _lightboxItems.length - 1 ? 0 : _lightboxIndex + 1);
+}
+
+function closeLightbox() {
+  const lb = document.getElementById('lightbox');
+  if (lb) { lb.classList.remove('show'); document.body.style.overflow = ''; }
+}
+
+document.getElementById('lightbox')?.addEventListener('click', (e) => { if (e.target.id === 'lightbox') closeLightbox(); });
 </script>
 </body>
 </html>
