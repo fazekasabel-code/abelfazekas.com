@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-site-lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -153,6 +153,16 @@
     outline-offset: 2px;
   }
 
+  /* ── Language (EN / HU) ──
+     Only ever hides. The visible side is matched by no rule at all, so it
+     keeps whatever display Tailwind or the inline styles gave it. */
+  html[data-site-lang="en"] [data-lang="hu"],
+  html[data-site-lang="hu"] [data-lang="en"] { display: none !important; }
+
+  .lang-btn { cursor: pointer; opacity: 0.4; transition: opacity 0.15s; }
+  .lang-btn:hover { opacity: 0.75; }
+  .lang-btn.is-active { opacity: 1; font-weight: 700; }
+
   /* ── Photo gallery: scrollable row (large thumbs, horizontal scroll) ── */
   .gallery-row {
     display: flex;
@@ -217,12 +227,28 @@
     padding: 0.5rem;
   }
 </style>
+<script>
+// Resolve language before first paint so there is no flash of the wrong one.
+(function () {
+  var l = 'en';
+  try {
+    var q = new URLSearchParams(location.search).get('lang');
+    if (q === 'hu' || q === 'en') l = q;
+    else {
+      var s = localStorage.getItem('site-lang');
+      if (s === 'hu' || s === 'en') l = s;
+    }
+  } catch (e) {}
+  document.documentElement.setAttribute('data-site-lang', l);
+  document.documentElement.lang = l;
+})();
+</script>
 </head>
 <body>
 
 <!-- Lightbox for gallery images -->
-<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged image">
-  <button type="button" onclick="closeLightbox()" aria-label="Close">&times;</button>
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged image" data-i18n-aria="enlarged">
+  <button type="button" onclick="closeLightbox()" aria-label="Close" data-i18n-aria="close">&times;</button>
   <img id="lightbox-img" src="" alt=""/>
 </div>
 
@@ -238,16 +264,21 @@
       <nav class="fixed top-0 left-0 w-full px-8 py-4 flex justify-between items-baseline z-50 transition-all duration-500" id="home-nav" style="background:rgba(15,15,15,0.6); backdrop-filter:blur(4px);">
         <div class="text-lg font-bold tracking-tighter transition-colors duration-500" id="home-name" style="color:rgba(255,255,255,1);">ÁBEL FAZEKAS</div>
         <!-- Hamburger for mobile -->
-        <button type="button" class="md:hidden hover:opacity-100 z-[60] transition-colors duration-500" onclick="toggleMobileNav()" aria-label="Menu" id="home-hamburger" style="color:rgba(255,255,255,0.8);">
+        <button type="button" class="md:hidden hover:opacity-100 z-[60] transition-colors duration-500" onclick="toggleMobileNav()" aria-label="Menu" data-i18n-aria="menu" id="home-hamburger" style="color:rgba(255,255,255,0.8);">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
         </button>
-        <div class="hidden md:flex flex-wrap gap-x-6 gap-y-2 text-sm uppercase tracking-wider transition-colors duration-500" id="home-links" style="color:rgba(255,255,255,0.9);">
-          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('home');return false">Home</a>
-          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('about');return false">About</a>
-          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('works');return false">Works</a>
+        <div class="hidden md:flex flex-wrap items-baseline gap-x-6 gap-y-2 text-sm uppercase tracking-wider transition-colors duration-500" id="home-links" style="color:rgba(255,255,255,0.9);">
+          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('home');return false"><span data-lang="en">Home</span><span data-lang="hu">Főoldal</span></a>
+          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('about');return false"><span data-lang="en">About</span><span data-lang="hu">Rólam</span></a>
+          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('works');return false"><span data-lang="en">Works</span><span data-lang="hu">Művek</span></a>
           <a class="hover:opacity-100 opacity-80" href="#" onclick="go('hangzavart');return false">Hangzavart!?</a>
-          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('agenda');return false">Agenda</a>
-          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('contact');return false">Contact</a>
+          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('agenda');return false"><span data-lang="en">Agenda</span><span data-lang="hu">Program</span></a>
+          <a class="hover:opacity-100 opacity-80" href="#" onclick="go('contact');return false"><span data-lang="en">Contact</span><span data-lang="hu">Kapcsolat</span></a>
+          <span class="flex items-baseline gap-1 text-[11px]" style="color:inherit;">
+            <button type="button" class="lang-btn bg-transparent border-0 p-0 uppercase tracking-wider" style="color:inherit;font-family:inherit;" data-lang-btn="en" onclick="setLang('en')">EN</button>
+            <span style="opacity:0.3;">/</span>
+            <button type="button" class="lang-btn bg-transparent border-0 p-0 uppercase tracking-wider" style="color:inherit;font-family:inherit;" data-lang-btn="hu" onclick="setLang('hu')">HU</button>
+          </span>
         </div>
       </nav>
 
@@ -261,22 +292,23 @@
 
       <div class="absolute inset-0 pointer-events-none" id="home-overlay" style="background:rgba(20,20,20,0);"></div>
 
-      <button type="button" id="home-scroll-hint" class="absolute left-1/2 -translate-x-1/2 bottom-6 w-8 h-8 flex items-center justify-center text-white/70 hover:text-white transition-all duration-300 pointer-events-auto cursor-pointer border-0 bg-transparent" style="font-family:'Space Mono',monospace;" aria-label="Scroll down" title="Scroll down">
+      <button type="button" id="home-scroll-hint" class="absolute left-1/2 -translate-x-1/2 bottom-6 w-8 h-8 flex items-center justify-center text-white/70 hover:text-white transition-all duration-300 pointer-events-auto cursor-pointer border-0 bg-transparent" style="font-family:'Space Mono',monospace;" aria-label="Scroll down" title="Scroll down" data-i18n-aria="scrollDown" data-i18n-title="scrollDown">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
       </button>
 
       <div class="absolute bottom-0 left-0 right-0 px-8 pb-8" id="home-content" style="opacity:0; color:#ffffff;">
         <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-sm leading-relaxed">
           <section>
-            <span class="block mb-4 text-[10px] tracking-widest uppercase" style="color:rgba(255,255,255,0.52);">Currently</span>
-            <p>2026 has mostly been spent away from public work. Returning to projects this autumn.</p>
+            <span class="block mb-4 text-[10px] tracking-widest uppercase" style="color:rgba(255,255,255,0.52);"><span data-lang="en">Currently</span><span data-lang="hu">Jelenleg</span></span>
+            <p data-lang="en">2026 has mostly been spent away from public work. Returning to projects this autumn.</p>
+            <p data-lang="hu">2026 nagy részét a nyilvános munkától távol töltöttem. Ősszel visszatérek a projektjeimhez.</p>
           </section>
           <section>
-            <span class="block mb-4 text-[10px] tracking-widest uppercase" style="color:rgba(255,255,255,0.52);">Based In</span>
-            <p>Budapest &amp; Basel</p>
+            <span class="block mb-4 text-[10px] tracking-widest uppercase" style="color:rgba(255,255,255,0.52);"><span data-lang="en">Based In</span><span data-lang="hu">Bázis</span></span>
+            <p><span data-lang="en">Budapest &amp; Basel</span><span data-lang="hu">Budapest &amp; Bázel</span></p>
           </section>
           <section>
-            <span class="block mb-4 text-[10px] tracking-widest uppercase" style="color:rgba(255,255,255,0.52);">Recent Work</span>
+            <span class="block mb-4 text-[10px] tracking-widest uppercase" style="color:rgba(255,255,255,0.52);"><span data-lang="en">Recent Work</span><span data-lang="hu">Legutóbbi munkák</span></span>
             <div class="space-y-2">
               <p><a href="#" onclick="go('works'); setTimeout(function(){ openWork('work-father-tomb'); }, 200); return false;" class="cursor-pointer hover:opacity-80 transition-opacity inline"><i>I am the Father and Tomb of the Sky</i></a> <span style="color:rgba(255,255,255,0.52);">— 2025</span></p>
               <p><a href="#" onclick="go('works'); setTimeout(function(){ openWork('work-thou'); }, 200); return false;" class="cursor-pointer hover:opacity-80 transition-opacity inline"><i>THOU</i></a> <span style="color:rgba(255,255,255,0.52);">— 2025–</span></p>
@@ -285,8 +317,8 @@
           </section>
         </div>
         <footer class="max-w-5xl mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-[10px] uppercase tracking-widest" style="color:rgba(255,255,255,0.48);">
-          <div>&copy; 2026 &Aacute;bel Fazekas</div>
-          <div class="normal-case tracking-normal text-[11px] italic">This site collects no data whatsoever.</div>
+          <div><span data-lang="en">&copy; 2026 &Aacute;bel Fazekas</span><span data-lang="hu">&copy; 2026 Fazekas &Aacute;bel</span></div>
+          <div class="normal-case tracking-normal text-[11px] italic"><span data-lang="en">This site collects no data whatsoever.</span><span data-lang="hu">Ez az oldal semmilyen adatot nem gyűjt.</span></div>
         </footer>
       </div>
     </div>
@@ -298,15 +330,20 @@
      MOBILE NAV OVERLAY (shared across all pages)
      ═══════════════════════════════════════════════════════ -->
 <div id="mobile-nav-overlay" class="fixed inset-0 z-[100] bg-[#1a1a1a]/95 backdrop-blur-md flex flex-col items-start justify-center px-10 gap-6 transition-transform duration-300" style="transform: translateX(100%); font-family: 'Space Mono', monospace;">
-  <button type="button" class="absolute top-4 right-6 text-white/70 hover:text-white" onclick="toggleMobileNav()" aria-label="Close menu">
+  <button type="button" class="absolute top-4 right-6 text-white/70 hover:text-white" onclick="toggleMobileNav()" aria-label="Close menu" data-i18n-aria="closeMenu">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
   </button>
-  <a href="#" onclick="go('home');return false" class="text-2xl text-white/80 hover:text-white uppercase tracking-wider">Home</a>
-  <a href="#" onclick="go('about');return false" class="text-2xl text-white/80 hover:text-white uppercase tracking-wider">About</a>
-  <a href="#" onclick="go('works');return false" class="text-2xl text-white/80 hover:text-white uppercase tracking-wider">Works</a>
+  <a href="#" onclick="go('home');return false" class="text-2xl text-white/80 hover:text-white uppercase tracking-wider"><span data-lang="en">Home</span><span data-lang="hu">Főoldal</span></a>
+  <a href="#" onclick="go('about');return false" class="text-2xl text-white/80 hover:text-white uppercase tracking-wider"><span data-lang="en">About</span><span data-lang="hu">Rólam</span></a>
+  <a href="#" onclick="go('works');return false" class="text-2xl text-white/80 hover:text-white uppercase tracking-wider"><span data-lang="en">Works</span><span data-lang="hu">Művek</span></a>
   <a href="#" onclick="go('hangzavart');return false" class="text-2xl text-white/80 hover:text-white uppercase tracking-wider">Hangzavart!?</a>
-  <a href="#" onclick="go('agenda');return false" class="text-2xl text-white/80 hover:text-white uppercase tracking-wider">Agenda</a>
-  <a href="#" onclick="go('contact');return false" class="text-2xl text-white/80 hover:text-white uppercase tracking-wider">Contact</a>
+  <a href="#" onclick="go('agenda');return false" class="text-2xl text-white/80 hover:text-white uppercase tracking-wider"><span data-lang="en">Agenda</span><span data-lang="hu">Program</span></a>
+  <a href="#" onclick="go('contact');return false" class="text-2xl text-white/80 hover:text-white uppercase tracking-wider"><span data-lang="en">Contact</span><span data-lang="hu">Kapcsolat</span></a>
+  <div class="mt-4 flex items-baseline gap-2 text-sm uppercase tracking-widest">
+    <button type="button" class="lang-btn bg-transparent border-0 p-0 text-white" data-lang-btn="en" onclick="setLang('en')">EN</button>
+    <span class="text-white/30">/</span>
+    <button type="button" class="lang-btn bg-transparent border-0 p-0 text-white" data-lang-btn="hu" onclick="setLang('hu')">HU</button>
+  </div>
 </div>
 
 
@@ -318,82 +355,132 @@
   <nav class="sticky top-0 z-50 bg-[#f9f9f7]/90 backdrop-blur-sm border-b border-black/10 px-8 py-4">
     <div class="max-w-5xl mx-auto flex justify-between items-baseline gap-4">
       <div class="text-lg font-bold tracking-tighter"><a href="#" onclick="go('home');return false">ÁBEL FAZEKAS</a></div>
-      <button type="button" class="md:hidden" onclick="toggleMobileNav()" aria-label="Menu">
+      <button type="button" class="md:hidden" onclick="toggleMobileNav()" aria-label="Menu" data-i18n-aria="menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
       </button>
-      <div class="hidden md:flex flex-wrap gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
-        <a class="nav-link" href="#" onclick="go('home');return false">Home</a>
-        <a class="active-nav" href="#">About</a>
-        <a class="nav-link" href="#" onclick="go('works');return false">Works</a>
+      <div class="hidden md:flex flex-wrap items-baseline gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
+        <a class="nav-link" href="#" onclick="go('home');return false"><span data-lang="en">Home</span><span data-lang="hu">Főoldal</span></a>
+        <a class="active-nav" href="#"><span data-lang="en">About</span><span data-lang="hu">Rólam</span></a>
+        <a class="nav-link" href="#" onclick="go('works');return false"><span data-lang="en">Works</span><span data-lang="hu">Művek</span></a>
         <a class="nav-link" href="#" onclick="go('hangzavart');return false">Hangzavart!?</a>
-        <a class="nav-link" href="#" onclick="go('agenda');return false">Agenda</a>
-        <a class="nav-link" href="#" onclick="go('contact');return false">Contact</a>
+        <a class="nav-link" href="#" onclick="go('agenda');return false"><span data-lang="en">Agenda</span><span data-lang="hu">Program</span></a>
+        <a class="nav-link" href="#" onclick="go('contact');return false"><span data-lang="en">Contact</span><span data-lang="hu">Kapcsolat</span></a>
+        <span class="flex items-baseline gap-1 text-[11px]">
+          <button type="button" class="lang-btn bg-transparent border-0 p-0 uppercase tracking-wider" style="color:inherit;font-family:inherit;" data-lang-btn="en" onclick="setLang('en')">EN</button>
+          <span style="opacity:0.3;">/</span>
+          <button type="button" class="lang-btn bg-transparent border-0 p-0 uppercase tracking-wider" style="color:inherit;font-family:inherit;" data-lang-btn="hu" onclick="setLang('hu')">HU</button>
+        </span>
       </div>
     </div>
   </nav>
 
   <main class="max-w-5xl mx-auto px-8 py-16">
     <header class="mb-12">
-      <h1 class="text-3xl font-bold mb-4">About</h1>
-      <p class="text-sm border border-black inline-block px-2 py-1 mb-2 italic">composer, performer, organizer</p>
+      <h1 class="text-3xl font-bold mb-4"><span data-lang="en">About</span><span data-lang="hu">Rólam</span></h1>
+      <p class="text-sm border border-black inline-block px-2 py-1 mb-2 italic"><span data-lang="en">composer, performer, organizer</span><span data-lang="hu">zeneszerző, előadó, szervező</span></p>
     </header>
 
     <div class="flex flex-wrap gap-4 mb-10 text-[10px] uppercase tracking-wider">
       <div class="flex items-center gap-2">
-        <span class="opacity-40">Voice:</span>
-        <span id="btn-1st" class="border border-black bg-black text-white px-2 py-0.5 cursor-pointer select-none" onclick="toggleVoice('1st')">1st person</span>
-        <span id="btn-3rd" class="border border-black/20 px-2 py-0.5 cursor-pointer opacity-60 hover:opacity-100 select-none" onclick="toggleVoice('3rd')">3rd person</span>
+        <span class="opacity-40"><span data-lang="en">Voice:</span><span data-lang="hu">Személy:</span></span>
+        <span id="btn-1st" class="border border-black bg-black text-white px-2 py-0.5 cursor-pointer select-none" onclick="toggleVoice('1st')"><span data-lang="en">1st person</span><span data-lang="hu">1. személy</span></span>
+        <span id="btn-3rd" class="border border-black/20 px-2 py-0.5 cursor-pointer opacity-60 hover:opacity-100 select-none" onclick="toggleVoice('3rd')"><span data-lang="en">3rd person</span><span data-lang="hu">3. személy</span></span>
       </div>
       <div class="flex items-center gap-2">
-        <span class="opacity-40">Length:</span>
-        <span id="btn-short" class="border border-black bg-black text-white px-2 py-0.5 cursor-pointer select-none" onclick="toggleBio('short')">Short</span>
-        <span id="btn-long" class="border border-black/20 px-2 py-0.5 cursor-pointer opacity-60 hover:opacity-100 select-none" onclick="toggleBio('long')">Long</span>
+        <span class="opacity-40"><span data-lang="en">Length:</span><span data-lang="hu">Hossz:</span></span>
+        <span id="btn-short" class="border border-black bg-black text-white px-2 py-0.5 cursor-pointer select-none" onclick="toggleBio('short')"><span data-lang="en">Short</span><span data-lang="hu">Rövid</span></span>
+        <span id="btn-long" class="border border-black/20 px-2 py-0.5 cursor-pointer opacity-60 hover:opacity-100 select-none" onclick="toggleBio('long')"><span data-lang="en">Long</span><span data-lang="hu">Hosszú</span></span>
       </div>
     </div>
 
-    <div id="bio-short-1st" class="max-w-xl text-sm leading-relaxed space-y-4 mb-10">
-      <p>I usually do music; composing, performing, organizing. Other times film, theater, philosophy, or whatever the good life demands.</p>
-      <p>Recent works include the slowest metal music you ever heard, an apophatic oratory, and a horror-documentary about suffering as a mode of attention.</p>
-      <p>Committed to breaking institutional boundaries, I founded a non-academic music academy and, before that, established some strangely academic squats. Somehow the two aren't unrelated.</p>
+    <div id="bio-short-1st" class="max-w-xl text-sm leading-relaxed mb-10">
+      <div data-lang="en" class="space-y-4">
+        <p>I usually do music; composing, performing, organizing. Other times film, theater, philosophy, or whatever the good life demands.</p>
+        <p>Recent works include the slowest metal music you ever heard, an apophatic oratory, and a horror-documentary about suffering as a mode of attention.</p>
+        <p>Committed to breaking institutional boundaries, I founded a non-academic music academy and, before that, established some strangely academic squats. Somehow the two aren't unrelated.</p>
+      </div>
+      <div data-lang="hu" class="space-y-4">
+        <p>Többnyire zenélek: szerzek, előadok, szervezek. Máskor film, színház, filozófia — vagy amit épp a jó élet megkíván.</p>
+        <p>A legutóbbi munkáim közt van a leglassabb metal, amit valaha hallottál, egy apofatikus oratórium, és egy horror-dokumentumfilm a szenvedésről mint a figyelem egy módjáról.</p>
+        <p>Elkötelezetten bontom az intézményi határokat: alapítottam egy nem-akadémikus zenei akadémiát, előtte pedig néhány furcsán akadémikus szkvotot. Valahogy a kettő nem független egymástól.</p>
+      </div>
     </div>
 
-    <div id="bio-short-3rd" class="hidden max-w-xl text-sm leading-relaxed space-y-4 mb-10">
-      <p>Ábel Fazekas usually does music; composing, performing, organizing. Other times film, theater, philosophy, or whatever the good life demands.</p>
-      <p>Recent works include the slowest metal music you ever heard, an apophatic oratory, and a horror-documentary about suffering as a mode of attention.</p>
-      <p>Committed to breaking institutional boundaries, he founded a non-academic music academy and, before that, established some strangely academic squats. Somehow the two aren't unrelated.</p>
+    <div id="bio-short-3rd" class="hidden max-w-xl text-sm leading-relaxed mb-10">
+      <div data-lang="en" class="space-y-4">
+        <p>Ábel Fazekas usually does music; composing, performing, organizing. Other times film, theater, philosophy, or whatever the good life demands.</p>
+        <p>Recent works include the slowest metal music you ever heard, an apophatic oratory, and a horror-documentary about suffering as a mode of attention.</p>
+        <p>Committed to breaking institutional boundaries, he founded a non-academic music academy and, before that, established some strangely academic squats. Somehow the two aren't unrelated.</p>
+      </div>
+      <div data-lang="hu" class="space-y-4">
+        <p>Fazekas Ábel többnyire zenél: szerez, előad, szervez. Máskor film, színház, filozófia — vagy amit épp a jó élet megkíván.</p>
+        <p>A legutóbbi munkái közt van a leglassabb metal, amit valaha hallottál, egy apofatikus oratórium, és egy horror-dokumentumfilm a szenvedésről mint a figyelem egy módjáról.</p>
+        <p>Elkötelezetten bontja az intézményi határokat: alapított egy nem-akadémikus zenei akadémiát, előtte pedig néhány furcsán akadémikus szkvotot. Valahogy a kettő nem független egymástól.</p>
+      </div>
     </div>
 
-    <div id="bio-long-1st" class="hidden max-w-xl text-sm leading-relaxed space-y-4 mb-10">
-      <p>I usually do music; composing, performing, organizing. Other times film, theater, philosophy, or whatever the good life demands.</p>
-      <p>Most of the work sits at the intersection of music, philosophy, and mathematics, often via tuning systems and feedback. Recent works include the slowest metal music you ever heard, an apophatic oratory, and five dimensional piece for five pianos.</p>
-      <p>As a performer, I play clarinets (though at this point, more research into extended techniques than standard repertoire) and I also improvise, having shared stages with Han Bennink, Fred Frith, John Duncan, Ingebrigt Håker Flaten, Jasper Stadhouders, Balázs Pándi, among others.</p>
-      <p>Beyond composition: I recently produced a horror-documentary about suffering as a mode of attention, led an artistic research series called Research Concert Cycle at Studio Loos Den Haag, contributed to a pop-science book on prime numbers, and host thematic dinner party performances. I also run somewhat notorious workshops around consensual pain, called Violence Club.</p>
-      <p>Committed to breaking institutional dichotomies, I founded Hangzavart!? in 2021 — a non-academic music academy. Think Darmstadt meets Burning Man: intensive artistic exploration, summer camp for thoughtful rebels, Erasmus+ funded. High art. Barefoot. Before that, I ran strangely academic squats with art and music students in The Hague.</p>
+    <div id="bio-long-1st" class="hidden max-w-xl text-sm leading-relaxed mb-10">
+      <div data-lang="en" class="space-y-4">
+        <p>I usually do music; composing, performing, organizing. Other times film, theater, philosophy, or whatever the good life demands.</p>
+        <p>Most of the work sits at the intersection of music, philosophy, and mathematics, often via tuning systems and feedback. Recent works include the slowest metal music you ever heard, an apophatic oratory, and five dimensional piece for five pianos.</p>
+        <p>As a performer, I play clarinets (though at this point, more research into extended techniques than standard repertoire) and I also improvise, having shared stages with Han Bennink, Fred Frith, John Duncan, Ingebrigt Håker Flaten, Jasper Stadhouders, Balázs Pándi, among others.</p>
+        <p>Beyond composition: I recently produced a horror-documentary about suffering as a mode of attention, led an artistic research series called Research Concert Cycle at Studio Loos Den Haag, contributed to a pop-science book on prime numbers, and host thematic dinner party performances. I also run somewhat notorious workshops around consensual pain, called Violence Club.</p>
+        <p>Committed to breaking institutional dichotomies, I founded Hangzavart!? in 2021 — a non-academic music academy. Think Darmstadt meets Burning Man: intensive artistic exploration, summer camp for thoughtful rebels, Erasmus+ funded. High art. Barefoot. Before that, I ran strangely academic squats with art and music students in The Hague.</p>
+      </div>
+      <div data-lang="hu" class="space-y-4">
+        <p>Többnyire zenélek: szerzek, előadok, szervezek. Máskor film, színház, filozófia — vagy amit épp a jó élet megkíván.</p>
+        <p>A munkáim nagy része a zene, a filozófia és a matematika metszéspontján áll, gyakran hangolási rendszereken és visszacsatoláson keresztül. A legutóbbiak közt van a leglassabb metal, amit valaha hallottál, egy apofatikus oratórium, és egy ötdimenziós darab öt zongorára.</p>
+        <p>Előadóként klarinétokon játszom (bár ez mostanra inkább a kiterjesztett játékmódok kutatása, mint standard repertoár), és improvizálok is — osztottam már színpadot Han Benninkkel, Fred Frithszel, John Duncannel, Ingebrigt Håker Flatennel, Jasper Stadhoudersszel és Pándi Balázzsal, többek között.</p>
+        <p>A szerzésen túl: nemrég producere voltam egy horror-dokumentumfilmnek a szenvedésről mint a figyelem egy módjáról, vezettem egy Research Concert Cycle nevű művészeti kutatássorozatot a hágai Studio Loosban, közreműködtem egy prímszámokról szóló ismeretterjesztő könyvben, és tematikus vacsora-performanszokat tartok. Emellett viszek egy némiképp hírhedt workshopsorozatot a konszenzusos fájdalomról, Violence Club néven.</p>
+        <p>Elkötelezetten bontom az intézményi dichotómiákat: 2021-ben alapítottam a Hangzavart!?-ot, egy nem-akadémikus zenei akadémiát. Képzeld el, hogy Darmstadt találkozik a Burning Mannel: intenzív művészeti kutatás, nyári tábor gondolkodó lázadóknak, Erasmus+ támogatással. High art. Mezítláb. Előtte furcsán akadémikus szkvotokat vittem művészeti és zenei hallgatókkal Hágában.</p>
+      </div>
     </div>
 
-    <div id="bio-long-3rd" class="hidden max-w-xl text-sm leading-relaxed space-y-4 mb-10">
-      <p>Ábel Fazekas usually does music; composing, performing, organizing. Other times film, theater, philosophy, or whatever the good life demands.</p>
-      <p>Most of the work sits at the intersection of music, philosophy, and mathematics, often via tuning systems and feedback. Recent works include the slowest metal music you ever heard, an apophatic oratory, and a five-dimensional piece for five pianos.</p>
-      <p>As a performer, he plays clarinets (though at this point, more research into extended techniques than standard repertoire) and also improvises, having shared stages with Han Bennink, Fred Frith, John Duncan, Ingebrigt Håker Flaten, Jasper Stadhouders, Balázs Pándi, among others.</p>
-      <p>Beyond composition: he recently produced a horror-documentary about suffering as a mode of attention, led an artistic research series called Research Concert Cycle at Studio Loos Den Haag, contributed to a pop-science book on prime numbers, and hosts thematic dinner party performances. He also runs somewhat notorious workshops around consensual pain, called Violence Club.</p>
-      <p>Committed to breaking institutional dichotomies, he founded Hangzavart!? in 2021 — a non-academic music academy. Think Darmstadt meets Burning Man: intensive artistic exploration, summer camp for thoughtful rebels, Erasmus+ funded. High art. Barefoot. Before that, he ran strangely academic squats with art and music students in The Hague.</p>
+    <div id="bio-long-3rd" class="hidden max-w-xl text-sm leading-relaxed mb-10">
+      <div data-lang="en" class="space-y-4">
+        <p>Ábel Fazekas usually does music; composing, performing, organizing. Other times film, theater, philosophy, or whatever the good life demands.</p>
+        <p>Most of the work sits at the intersection of music, philosophy, and mathematics, often via tuning systems and feedback. Recent works include the slowest metal music you ever heard, an apophatic oratory, and a five-dimensional piece for five pianos.</p>
+        <p>As a performer, he plays clarinets (though at this point, more research into extended techniques than standard repertoire) and also improvises, having shared stages with Han Bennink, Fred Frith, John Duncan, Ingebrigt Håker Flaten, Jasper Stadhouders, Balázs Pándi, among others.</p>
+        <p>Beyond composition: he recently produced a horror-documentary about suffering as a mode of attention, led an artistic research series called Research Concert Cycle at Studio Loos Den Haag, contributed to a pop-science book on prime numbers, and hosts thematic dinner party performances. He also runs somewhat notorious workshops around consensual pain, called Violence Club.</p>
+        <p>Committed to breaking institutional dichotomies, he founded Hangzavart!? in 2021 — a non-academic music academy. Think Darmstadt meets Burning Man: intensive artistic exploration, summer camp for thoughtful rebels, Erasmus+ funded. High art. Barefoot. Before that, he ran strangely academic squats with art and music students in The Hague.</p>
+      </div>
+      <div data-lang="hu" class="space-y-4">
+        <p>Fazekas Ábel többnyire zenél: szerez, előad, szervez. Máskor film, színház, filozófia — vagy amit épp a jó élet megkíván.</p>
+        <p>A munkáinak nagy része a zene, a filozófia és a matematika metszéspontján áll, gyakran hangolási rendszereken és visszacsatoláson keresztül. A legutóbbiak közt van a leglassabb metal, amit valaha hallottál, egy apofatikus oratórium, és egy ötdimenziós darab öt zongorára.</p>
+        <p>Előadóként klarinétokon játszik (bár ez mostanra inkább a kiterjesztett játékmódok kutatása, mint standard repertoár), és improvizál is — osztott már színpadot Han Benninkkel, Fred Frithszel, John Duncannel, Ingebrigt Håker Flatennel, Jasper Stadhoudersszel és Pándi Balázzsal, többek között.</p>
+        <p>A szerzésen túl: nemrég producere volt egy horror-dokumentumfilmnek a szenvedésről mint a figyelem egy módjáról, vezetett egy Research Concert Cycle nevű művészeti kutatássorozatot a hágai Studio Loosban, közreműködött egy prímszámokról szóló ismeretterjesztő könyvben, és tematikus vacsora-performanszokat tart. Emellett visz egy némiképp hírhedt workshopsorozatot a konszenzusos fájdalomról, Violence Club néven.</p>
+        <p>Elkötelezetten bontja az intézményi dichotómiákat: 2021-ben alapította a Hangzavart!?-ot, egy nem-akadémikus zenei akadémiát. Képzeld el, hogy Darmstadt találkozik a Burning Mannel: intenzív művészeti kutatás, nyári tábor gondolkodó lázadóknak, Erasmus+ támogatással. High art. Mezítláb. Előtte furcsán akadémikus szkvotokat vitt művészeti és zenei hallgatókkal Hágában.</p>
+      </div>
     </div>
 
-    <div id="edu-short" class="border-t border-black/10 pt-6 text-sm text-black/50 space-y-1 mb-4">
-      <p>BA in Composition from The Royal Conservatory of The Hague.</p>
-      <p>MA in Composition from Musikakademie Basel.</p>
+    <div id="edu-short" class="border-t border-black/10 pt-6 text-sm text-black/50 mb-4">
+      <div data-lang="en" class="space-y-1">
+        <p>BA in Composition from The Royal Conservatory of The Hague.</p>
+        <p>MA in Composition from Musikakademie Basel.</p>
+      </div>
+      <div data-lang="hu" class="space-y-1">
+        <p>BA zeneszerzés — Royal Conservatory of The Hague.</p>
+        <p>MA zeneszerzés — Musikakademie Basel.</p>
+      </div>
     </div>
-    <div id="edu-long" class="hidden border-t border-black/10 pt-6 text-sm text-black/50 space-y-1 mb-4">
-      <p>BA in Composition from the Royal Conservatory of The Hague, studying with Martijn Padding, Yannis Kyriakides, Cornelis de Bondt, and Raviv Ganchrow. During those years, I also attended courses at the Institute of Sonology, the ArtScience faculty of the Royal Academy of Arts, and Leiden University.</p>
-      <p>MA in Composition from Musikakademie Basel with Johannes Kreidler and Johannes Caspar Walter. Visiting student at Schola Cantorum Basel, studying with Johannes Menke and Johannes Keller.</p>
-      <p>Over the years, I attended masterclasses with Helmut Lachenmann, Georg Friedrich Haas, Giorgio Netti, Jennifer Walshe, Peter Ablinger, Nicolas Collins, and Marc Sabat.</p>
+    <div id="edu-long" class="hidden border-t border-black/10 pt-6 text-sm text-black/50 mb-4">
+      <div data-lang="en" class="space-y-1">
+        <p>BA in Composition from the Royal Conservatory of The Hague, studying with Martijn Padding, Yannis Kyriakides, Cornelis de Bondt, and Raviv Ganchrow. During those years, I also attended courses at the Institute of Sonology, the ArtScience faculty of the Royal Academy of Arts, and Leiden University.</p>
+        <p>MA in Composition from Musikakademie Basel with Johannes Kreidler and Johannes Caspar Walter. Visiting student at Schola Cantorum Basel, studying with Johannes Menke and Johannes Keller.</p>
+        <p>Over the years, I attended masterclasses with Helmut Lachenmann, Georg Friedrich Haas, Giorgio Netti, Jennifer Walshe, Peter Ablinger, Nicolas Collins, and Marc Sabat.</p>
+      </div>
+      <div data-lang="hu" class="space-y-1">
+        <p>BA zeneszerzés a Royal Conservatory of The Hague-en, Martijn Padding, Yannis Kyriakides, Cornelis de Bondt és Raviv Ganchrow növendékeként. Ezekben az években kurzusokat hallgattam az Institute of Sonologyn, a Royal Academy of Arts ArtScience szakán és a Leideni Egyetemen.</p>
+        <p>MA zeneszerzés a Musikakademie Baselben, Johannes Kreidler és Johannes Caspar Walter osztályában. Vendéghallgató a Schola Cantorum Baselben, Johannes Menke és Johannes Keller óráin.</p>
+        <p>Az évek során mesterkurzusokon vettem részt Helmut Lachenmann, Georg Friedrich Haas, Giorgio Netti, Jennifer Walshe, Peter Ablinger, Nicolas Collins és Marc Sabat vezetésével.</p>
+      </div>
     </div>
 
-    <p class="text-sm text-black/40">Currently based in Budapest and Basel.</p>
+    <p class="text-sm text-black/40"><span data-lang="en">Currently based in Budapest and Basel.</span><span data-lang="hu">Jelenlegi bázis: Budapest és Bázel.</span></p>
 
     <footer class="mt-32 pt-12 border-t border-black/10 text-[10px] uppercase tracking-widest text-black/40 flex flex-col md:flex-row justify-between gap-2">
-      <div>&copy; 2026 &Aacute;bel Fazekas</div>
-      <div class="normal-case tracking-normal text-[11px] italic">This site collects no data whatsoever.</div>
+      <div><span data-lang="en">&copy; 2026 &Aacute;bel Fazekas</span><span data-lang="hu">&copy; 2026 Fazekas &Aacute;bel</span></div>
+      <div class="normal-case tracking-normal text-[11px] italic"><span data-lang="en">This site collects no data whatsoever.</span><span data-lang="hu">Ez az oldal semmilyen adatot nem gyűjt.</span></div>
     </footer>
   </main>
 </div>
@@ -408,16 +495,21 @@
   <nav class="sticky top-0 z-50 bg-[#f9f9f7]/90 backdrop-blur-sm border-b border-black/10 px-8 py-4">
     <div class="max-w-5xl mx-auto flex justify-between items-baseline gap-4">
       <div class="text-lg font-bold tracking-tighter"><a href="#" onclick="go('home');return false">ÁBEL FAZEKAS</a></div>
-      <button type="button" class="md:hidden" onclick="toggleMobileNav()" aria-label="Menu">
+      <button type="button" class="md:hidden" onclick="toggleMobileNav()" aria-label="Menu" data-i18n-aria="menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
       </button>
-      <div class="hidden md:flex flex-wrap gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
-        <a class="nav-link" href="#" onclick="go('home');return false">Home</a>
-        <a class="nav-link" href="#" onclick="go('about');return false">About</a>
-        <a class="active-nav" href="#">Works</a>
+      <div class="hidden md:flex flex-wrap items-baseline gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
+        <a class="nav-link" href="#" onclick="go('home');return false"><span data-lang="en">Home</span><span data-lang="hu">Főoldal</span></a>
+        <a class="nav-link" href="#" onclick="go('about');return false"><span data-lang="en">About</span><span data-lang="hu">Rólam</span></a>
+        <a class="active-nav" href="#"><span data-lang="en">Works</span><span data-lang="hu">Művek</span></a>
         <a class="nav-link" href="#" onclick="go('hangzavart');return false">Hangzavart!?</a>
-        <a class="nav-link" href="#" onclick="go('agenda');return false">Agenda</a>
-        <a class="nav-link" href="#" onclick="go('contact');return false">Contact</a>
+        <a class="nav-link" href="#" onclick="go('agenda');return false"><span data-lang="en">Agenda</span><span data-lang="hu">Program</span></a>
+        <a class="nav-link" href="#" onclick="go('contact');return false"><span data-lang="en">Contact</span><span data-lang="hu">Kapcsolat</span></a>
+        <span class="flex items-baseline gap-1 text-[11px]">
+          <button type="button" class="lang-btn bg-transparent border-0 p-0 uppercase tracking-wider" style="color:inherit;font-family:inherit;" data-lang-btn="en" onclick="setLang('en')">EN</button>
+          <span style="opacity:0.3;">/</span>
+          <button type="button" class="lang-btn bg-transparent border-0 p-0 uppercase tracking-wider" style="color:inherit;font-family:inherit;" data-lang-btn="hu" onclick="setLang('hu')">HU</button>
+        </span>
       </div>
     </div>
   </nav>
@@ -944,8 +1036,8 @@
     </div>
 
     <footer class="mt-32 pt-12 border-t border-black/10 text-[10px] uppercase tracking-widest text-black/40 flex flex-col md:flex-row justify-between gap-2">
-      <div>&copy; 2026 &Aacute;bel Fazekas</div>
-      <div class="normal-case tracking-normal text-[11px] italic">This site collects no data whatsoever.</div>
+      <div><span data-lang="en">&copy; 2026 &Aacute;bel Fazekas</span><span data-lang="hu">&copy; 2026 Fazekas &Aacute;bel</span></div>
+      <div class="normal-case tracking-normal text-[11px] italic"><span data-lang="en">This site collects no data whatsoever.</span><span data-lang="hu">Ez az oldal semmilyen adatot nem gyűjt.</span></div>
     </footer>
   </main>
 </div>
@@ -960,16 +1052,21 @@
   <nav class="sticky top-0 z-50 bg-[#f9f9f7]/90 backdrop-blur-sm border-b border-black/10 px-8 py-4">
     <div class="max-w-5xl mx-auto flex justify-between items-baseline gap-4">
       <div class="text-lg font-bold tracking-tighter"><a href="#" onclick="go('home');return false">ÁBEL FAZEKAS</a></div>
-      <button type="button" class="md:hidden" onclick="toggleMobileNav()" aria-label="Menu">
+      <button type="button" class="md:hidden" onclick="toggleMobileNav()" aria-label="Menu" data-i18n-aria="menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
       </button>
-      <div class="hidden md:flex flex-wrap gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
-        <a class="nav-link" href="#" onclick="go('home');return false">Home</a>
-        <a class="nav-link" href="#" onclick="go('about');return false">About</a>
-        <a class="nav-link" href="#" onclick="go('works');return false">Works</a>
+      <div class="hidden md:flex flex-wrap items-baseline gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
+        <a class="nav-link" href="#" onclick="go('home');return false"><span data-lang="en">Home</span><span data-lang="hu">Főoldal</span></a>
+        <a class="nav-link" href="#" onclick="go('about');return false"><span data-lang="en">About</span><span data-lang="hu">Rólam</span></a>
+        <a class="nav-link" href="#" onclick="go('works');return false"><span data-lang="en">Works</span><span data-lang="hu">Művek</span></a>
         <a class="active-nav" href="#">Hangzavart!?</a>
-        <a class="nav-link" href="#" onclick="go('agenda');return false">Agenda</a>
-        <a class="nav-link" href="#" onclick="go('contact');return false">Contact</a>
+        <a class="nav-link" href="#" onclick="go('agenda');return false"><span data-lang="en">Agenda</span><span data-lang="hu">Program</span></a>
+        <a class="nav-link" href="#" onclick="go('contact');return false"><span data-lang="en">Contact</span><span data-lang="hu">Kapcsolat</span></a>
+        <span class="flex items-baseline gap-1 text-[11px]">
+          <button type="button" class="lang-btn bg-transparent border-0 p-0 uppercase tracking-wider" style="color:inherit;font-family:inherit;" data-lang-btn="en" onclick="setLang('en')">EN</button>
+          <span style="opacity:0.3;">/</span>
+          <button type="button" class="lang-btn bg-transparent border-0 p-0 uppercase tracking-wider" style="color:inherit;font-family:inherit;" data-lang-btn="hu" onclick="setLang('hu')">HU</button>
+        </span>
       </div>
     </div>
   </nav>
@@ -1003,8 +1100,8 @@
     </div>
 
     <footer class="mt-32 pt-12 border-t border-black/10 text-[10px] uppercase tracking-widest text-black/40 flex flex-col md:flex-row justify-between gap-2">
-      <div>&copy; 2026 &Aacute;bel Fazekas</div>
-      <div class="normal-case tracking-normal text-[11px] italic">This site collects no data whatsoever.</div>
+      <div><span data-lang="en">&copy; 2026 &Aacute;bel Fazekas</span><span data-lang="hu">&copy; 2026 Fazekas &Aacute;bel</span></div>
+      <div class="normal-case tracking-normal text-[11px] italic"><span data-lang="en">This site collects no data whatsoever.</span><span data-lang="hu">Ez az oldal semmilyen adatot nem gyűjt.</span></div>
     </footer>
   </main>
 </div>
@@ -1020,16 +1117,21 @@
   <nav class="sticky top-0 z-50 bg-[#f9f9f7]/90 backdrop-blur-sm border-b border-black/10 px-8 py-4">
     <div class="max-w-5xl mx-auto flex justify-between items-baseline gap-4">
       <div class="text-lg font-bold tracking-tighter"><a href="#" onclick="go('home');return false">ÁBEL FAZEKAS</a></div>
-      <button type="button" class="md:hidden" onclick="toggleMobileNav()" aria-label="Menu">
+      <button type="button" class="md:hidden" onclick="toggleMobileNav()" aria-label="Menu" data-i18n-aria="menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
       </button>
-      <div class="hidden md:flex flex-wrap gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
-        <a class="nav-link" href="#" onclick="go('home');return false">Home</a>
-        <a class="nav-link" href="#" onclick="go('about');return false">About</a>
-        <a class="nav-link" href="#" onclick="go('works');return false">Works</a>
+      <div class="hidden md:flex flex-wrap items-baseline gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
+        <a class="nav-link" href="#" onclick="go('home');return false"><span data-lang="en">Home</span><span data-lang="hu">Főoldal</span></a>
+        <a class="nav-link" href="#" onclick="go('about');return false"><span data-lang="en">About</span><span data-lang="hu">Rólam</span></a>
+        <a class="nav-link" href="#" onclick="go('works');return false"><span data-lang="en">Works</span><span data-lang="hu">Művek</span></a>
         <a class="nav-link" href="#" onclick="go('hangzavart');return false">Hangzavart!?</a>
-        <a class="active-nav" href="#">Agenda</a>
-        <a class="nav-link" href="#" onclick="go('contact');return false">Contact</a>
+        <a class="active-nav" href="#"><span data-lang="en">Agenda</span><span data-lang="hu">Program</span></a>
+        <a class="nav-link" href="#" onclick="go('contact');return false"><span data-lang="en">Contact</span><span data-lang="hu">Kapcsolat</span></a>
+        <span class="flex items-baseline gap-1 text-[11px]">
+          <button type="button" class="lang-btn bg-transparent border-0 p-0 uppercase tracking-wider" style="color:inherit;font-family:inherit;" data-lang-btn="en" onclick="setLang('en')">EN</button>
+          <span style="opacity:0.3;">/</span>
+          <button type="button" class="lang-btn bg-transparent border-0 p-0 uppercase tracking-wider" style="color:inherit;font-family:inherit;" data-lang-btn="hu" onclick="setLang('hu')">HU</button>
+        </span>
       </div>
     </div>
   </nav>
@@ -1108,8 +1210,8 @@
     </section>
 
     <footer class="mt-32 pt-12 border-t border-black/10 text-[10px] uppercase tracking-widest text-black/40 flex flex-col md:flex-row justify-between gap-2 pb-12">
-      <div>&copy; 2026 &Aacute;bel Fazekas</div>
-      <div class="normal-case tracking-normal text-[11px] italic">This site collects no data whatsoever.</div>
+      <div><span data-lang="en">&copy; 2026 &Aacute;bel Fazekas</span><span data-lang="hu">&copy; 2026 Fazekas &Aacute;bel</span></div>
+      <div class="normal-case tracking-normal text-[11px] italic"><span data-lang="en">This site collects no data whatsoever.</span><span data-lang="hu">Ez az oldal semmilyen adatot nem gyűjt.</span></div>
     </footer>
   </main>
 </div>
@@ -1124,31 +1226,36 @@
   <nav class="sticky top-0 z-50 bg-[#f9f9f7]/90 backdrop-blur-sm border-b border-black/10 px-8 py-4">
     <div class="max-w-5xl mx-auto flex justify-between items-baseline gap-4">
       <div class="text-lg font-bold tracking-tighter"><a href="#" onclick="go('home');return false">ÁBEL FAZEKAS</a></div>
-      <button type="button" class="md:hidden" onclick="toggleMobileNav()" aria-label="Menu">
+      <button type="button" class="md:hidden" onclick="toggleMobileNav()" aria-label="Menu" data-i18n-aria="menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
       </button>
-      <div class="hidden md:flex flex-wrap gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
-        <a class="nav-link" href="#" onclick="go('home');return false">Home</a>
-        <a class="nav-link" href="#" onclick="go('about');return false">About</a>
-        <a class="nav-link" href="#" onclick="go('works');return false">Works</a>
+      <div class="hidden md:flex flex-wrap items-baseline gap-x-6 gap-y-2 text-sm uppercase tracking-wider">
+        <a class="nav-link" href="#" onclick="go('home');return false"><span data-lang="en">Home</span><span data-lang="hu">Főoldal</span></a>
+        <a class="nav-link" href="#" onclick="go('about');return false"><span data-lang="en">About</span><span data-lang="hu">Rólam</span></a>
+        <a class="nav-link" href="#" onclick="go('works');return false"><span data-lang="en">Works</span><span data-lang="hu">Művek</span></a>
         <a class="nav-link" href="#" onclick="go('hangzavart');return false">Hangzavart!?</a>
-        <a class="nav-link" href="#" onclick="go('agenda');return false">Agenda</a>
-        <a class="active-nav" href="#">Contact</a>
+        <a class="nav-link" href="#" onclick="go('agenda');return false"><span data-lang="en">Agenda</span><span data-lang="hu">Program</span></a>
+        <a class="active-nav" href="#"><span data-lang="en">Contact</span><span data-lang="hu">Kapcsolat</span></a>
+        <span class="flex items-baseline gap-1 text-[11px]">
+          <button type="button" class="lang-btn bg-transparent border-0 p-0 uppercase tracking-wider" style="color:inherit;font-family:inherit;" data-lang-btn="en" onclick="setLang('en')">EN</button>
+          <span style="opacity:0.3;">/</span>
+          <button type="button" class="lang-btn bg-transparent border-0 p-0 uppercase tracking-wider" style="color:inherit;font-family:inherit;" data-lang-btn="hu" onclick="setLang('hu')">HU</button>
+        </span>
       </div>
     </div>
   </nav>
 
   <main class="max-w-5xl mx-auto px-8 py-16">
     <header class="mb-16">
-      <h1 class="text-3xl font-bold mb-4">Contact</h1>
+      <h1 class="text-3xl font-bold mb-4"><span data-lang="en">Contact</span><span data-lang="hu">Kapcsolat</span></h1>
     </header>
 
     <div class="space-y-8 max-w-md">
-      <p class="text-sm text-black/50 -mt-8 mb-10">For commissions, collaborations, performances, or anything else.</p>
+      <p class="text-sm text-black/50 -mt-8 mb-10"><span data-lang="en">For commissions, collaborations, performances, or anything else.</span><span data-lang="hu">Felkérésekhez, együttműködésekhez, koncertekhez — vagy bármi máshoz.</span></p>
 
       <form action="https://formspree.io/f/maqdarey" method="POST" class="space-y-4">
         <div class="flex flex-col gap-1">
-          <label for="name" class="text-[10px] uppercase tracking-widest opacity-60">Name</label>
+          <label for="name" class="text-[10px] uppercase tracking-widest opacity-60"><span data-lang="en">Name</span><span data-lang="hu">Név</span></label>
           <input id="name" name="name" type="text" required class="border border-black/20 px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-black"/>
         </div>
 
@@ -1158,7 +1265,7 @@
         </div>
 
         <div class="flex flex-col gap-1">
-          <label for="message" class="text-[10px] uppercase tracking-widest opacity-60">Message</label>
+          <label for="message" class="text-[10px] uppercase tracking-widest opacity-60"><span data-lang="en">Message</span><span data-lang="hu">Üzenet</span></label>
           <textarea id="message" name="message" rows="5" required class="border border-black/20 px-3 py-2 text-sm bg-transparent focus:outline-none focus:ring-1 focus:ring-black"></textarea>
         </div>
 
@@ -1166,19 +1273,19 @@
         <input type="text" name="_gotcha" class="hidden" tabindex="-1" autocomplete="off"/>
 
         <button type="submit" class="mt-4 inline-flex items-center justify-center border border-black px-4 py-2 text-xs uppercase tracking-widest bg-black text-white hover:bg-transparent hover:text-black transition-colors">
-          Send message
+          <span data-lang="en">Send message</span><span data-lang="hu">Üzenet küldése</span>
         </button>
       </form>
 
       <div>
-        <p class="text-[10px] uppercase tracking-widest opacity-40 mb-1">Based in</p>
-        <p class="text-base">Budapest &amp; Basel</p>
+        <p class="text-[10px] uppercase tracking-widest opacity-40 mb-1"><span data-lang="en">Based in</span><span data-lang="hu">Bázis</span></p>
+        <p class="text-base"><span data-lang="en">Budapest &amp; Basel</span><span data-lang="hu">Budapest &amp; Bázel</span></p>
       </div>
     </div>
 
     <footer class="mt-32 pt-12 border-t border-black/10 text-[10px] uppercase tracking-widest text-black/40 flex flex-col md:flex-row justify-between gap-2">
-      <div>&copy; 2026 &Aacute;bel Fazekas</div>
-      <div class="normal-case tracking-normal text-[11px] italic">This site collects no data whatsoever.</div>
+      <div><span data-lang="en">&copy; 2026 &Aacute;bel Fazekas</span><span data-lang="hu">&copy; 2026 Fazekas &Aacute;bel</span></div>
+      <div class="normal-case tracking-normal text-[11px] italic"><span data-lang="en">This site collects no data whatsoever.</span><span data-lang="hu">Ez az oldal semmilyen adatot nem gyűjt.</span></div>
     </footer>
   </main>
 </div>
@@ -1200,6 +1307,59 @@ var laudanumItems = [
   {src:'media/works_laudanum/laudanum_4.png',alt:'Laudanum performance still 4'},
   {src:'media/works_laudanum/laudanum_5.png',alt:'Laudanum performance still 5'}
 ];
+
+// ── Language (EN / HU) ──
+// Body copy is swapped by CSS via paired [data-lang] elements. Only the things
+// CSS cannot reach — <title>, meta tags, aria-label/title attributes — live here.
+var I18N_META = {
+  title:   { en: 'Ábel Fazekas', hu: 'Fazekas Ábel' },
+  desc:    { en: 'Ábel Fazekas — composer, performer, organizer. Based in Budapest and Basel.',
+             hu: 'Fazekas Ábel — zeneszerző, előadó, szervező. Budapest és Bázel.' },
+  ogTitle: { en: 'Ábel Fazekas', hu: 'Fazekas Ábel' },
+  ogDesc:  { en: 'Composer, performer, organizer. Based in Budapest and Basel.',
+             hu: 'Zeneszerző, előadó, szervező. Budapest és Bázel.' }
+};
+
+var I18N_ARIA = {
+  menu:       { en: 'Menu',            hu: 'Menü' },
+  closeMenu:  { en: 'Close menu',      hu: 'Menü bezárása' },
+  close:      { en: 'Close',           hu: 'Bezárás' },
+  scrollDown: { en: 'Scroll down',     hu: 'Görgess lejjebb' },
+  enlarged:   { en: 'Enlarged image',  hu: 'Nagyított kép' }
+};
+
+function currentLang() {
+  return document.documentElement.getAttribute('data-site-lang') === 'hu' ? 'hu' : 'en';
+}
+
+function setLang(lang) {
+  if (lang !== 'en' && lang !== 'hu') lang = 'en';
+  document.documentElement.setAttribute('data-site-lang', lang);
+  document.documentElement.lang = lang;
+
+  document.title = I18N_META.title[lang];
+  var m;
+  if ((m = document.querySelector('meta[name="description"]')))      m.setAttribute('content', I18N_META.desc[lang]);
+  if ((m = document.querySelector('meta[property="og:title"]')))      m.setAttribute('content', I18N_META.ogTitle[lang]);
+  if ((m = document.querySelector('meta[property="og:description"]'))) m.setAttribute('content', I18N_META.ogDesc[lang]);
+
+  document.querySelectorAll('[data-i18n-aria]').forEach(function (el) {
+    var s = I18N_ARIA[el.getAttribute('data-i18n-aria')];
+    if (s) el.setAttribute('aria-label', s[lang]);
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach(function (el) {
+    var s = I18N_ARIA[el.getAttribute('data-i18n-title')];
+    if (s) el.setAttribute('title', s[lang]);
+  });
+
+  document.querySelectorAll('[data-lang-btn]').forEach(function (b) {
+    b.classList.toggle('is-active', b.getAttribute('data-lang-btn') === lang);
+  });
+
+  try { localStorage.setItem('site-lang', lang); } catch (e) {}
+}
+
+document.addEventListener('DOMContentLoaded', function () { setLang(currentLang()); });
 
 // ── Email obfuscation ──
 document.addEventListener('DOMContentLoaded', () => {
