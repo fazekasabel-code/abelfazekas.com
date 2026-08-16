@@ -1,9 +1,27 @@
-# WEBSITE MASTER FILE
-## Ábel Fazekas — Professional Site
+# WEBSITE MASTER FILE — ARCHIVED
+
+> **This is the pre-build planning document, kept for reference. It is not maintained.**
+>
+> The site was built and launched in February 2026. **`index.html` is the only source of
+> truth for content.** For current tasks see `TODO.md`; for how to edit the site
+> (including the EN/HU language system) see `DEPLOY.md`.
+>
+> Known drift, as of 16 Aug 2026 — do not trust these sections:
+> - The work listed here as *Francesco d'Assis* is called **Laudanum** on the site.
+> - ***a short symphony, rendered from nine angles*** (2019, Residentie Orkest) is on the
+>   site but missing from the table below.
+> - "Current date: February 18, 2026" in the Agenda section is stale.
+> - The Agenda events below are superseded: the LA premiere happened **19 Mar 2026**
+>   (Experimental Forum, Art House), and **A szem története** at MU Színház, Budapest
+>   (4–6 Nov 2026, composition and sound design) is now the upcoming entry.
+> - Open questions marked unresolved here have since been decided: multilingual is
+>   **done** (EN/HU), hosting is **GitHub Pages**, the domain is **www.abelfazekas.com**.
+> - The bio versions matrix is out of date — all four voice × length combinations exist
+>   on the site, in both languages. The *name-dropping* toggle was never built.
 
 **Motto:** Spirit as Sound as Matter  
 **Vibe:** Simple, lo-fi, almost goofy  
-**Status:** Planning / Pre-build
+**Status:** Archived — superseded by the live site
 
 ---
 
