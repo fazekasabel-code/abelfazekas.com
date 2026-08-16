@@ -463,7 +463,7 @@
         <p>MA zeneszerzés — Musikakademie Basel.</p>
       </div>
     </div>
-    <div id="edu-long" class="hidden max-w-xl border-t border-black/10 pt-6 text-sm leading-relaxed text-black/50 mb-4">
+    <div id="edu-long-1st" class="hidden max-w-xl border-t border-black/10 pt-6 text-sm leading-relaxed text-black/50 mb-4">
       <div data-lang="en" class="space-y-4">
         <p>BA in Composition from the Royal Conservatory of The Hague, studying with Martijn Padding, Yannis Kyriakides, Cornelis de Bondt, and Raviv Ganchrow. During those years, I also attended courses at the Institute of Sonology, the ArtScience faculty of the Royal Academy of Arts, and Leiden University.</p>
         <p>MA in Composition from Musikakademie Basel with Johannes Kreidler and Johannes Caspar Walter. Visiting student at Schola Cantorum Basel, studying with Johannes Menke and Johannes Keller.</p>
@@ -473,6 +473,18 @@
         <p>BA zeneszerzés a Royal Conservatory of The Hague-en, Martijn Padding, Yannis Kyriakides, Cornelis de Bondt és Raviv Ganchrow növendékeként. Ezekben az években kurzusokat hallgattam az Institute of Sonologyn, a Royal Academy of Arts ArtScience szakán és a Leideni Egyetemen.</p>
         <p>MA zeneszerzés a Musikakademie Baselben, Johannes Kreidler és Johannes Caspar Walter osztályában. Vendéghallgató a Schola Cantorum Baselben, Johannes Menke és Johannes Keller óráin.</p>
         <p>Az évek során mesterkurzusokon vettem részt Helmut Lachenmann, Georg Friedrich Haas, Giorgio Netti, Jennifer Walshe, Peter Ablinger, Nicolas Collins és Marc Sabat vezetésével.</p>
+      </div>
+    </div>
+    <div id="edu-long-3rd" class="hidden max-w-xl border-t border-black/10 pt-6 text-sm leading-relaxed text-black/50 mb-4">
+      <div data-lang="en" class="space-y-4">
+        <p>BA in Composition from the Royal Conservatory of The Hague, studying with Martijn Padding, Yannis Kyriakides, Cornelis de Bondt, and Raviv Ganchrow. During those years, he also attended courses at the Institute of Sonology, the ArtScience faculty of the Royal Academy of Arts, and Leiden University.</p>
+        <p>MA in Composition from Musikakademie Basel with Johannes Kreidler and Johannes Caspar Walter. Visiting student at Schola Cantorum Basel, studying with Johannes Menke and Johannes Keller.</p>
+        <p>Over the years, he attended masterclasses with Helmut Lachenmann, Georg Friedrich Haas, Giorgio Netti, Jennifer Walshe, Peter Ablinger, Nicolas Collins, and Marc Sabat.</p>
+      </div>
+      <div data-lang="hu" class="space-y-4">
+        <p>BA zeneszerzés a Royal Conservatory of The Hague-en, Martijn Padding, Yannis Kyriakides, Cornelis de Bondt és Raviv Ganchrow növendékeként. Ezekben az években kurzusokat hallgatott az Institute of Sonologyn, a Royal Academy of Arts ArtScience szakán és a Leideni Egyetemen.</p>
+        <p>MA zeneszerzés a Musikakademie Baselben, Johannes Kreidler és Johannes Caspar Walter osztályában. Vendéghallgató a Schola Cantorum Baselben, Johannes Menke és Johannes Keller óráin.</p>
+        <p>Az évek során mesterkurzusokon vett részt Helmut Lachenmann, Georg Friedrich Haas, Giorgio Netti, Jennifer Walshe, Peter Ablinger, Nicolas Collins és Marc Sabat vezetésével.</p>
       </div>
     </div>
 
@@ -1534,10 +1546,14 @@ function updateBioDisplay() {
   document.querySelectorAll('[id^="bio-"]').forEach(el => { el.classList.add('hidden'); });
   const active = document.getElementById('bio-' + bioLength + '-' + bioVoice);
   if (active) active.classList.remove('hidden');
+  // Education: short is person-neutral; long follows the voice toggle.
   const es = document.getElementById('edu-short');
-  const el = document.getElementById('edu-long');
   if (es) es.classList.toggle('hidden', bioLength !== 'short');
-  if (el) el.classList.toggle('hidden', bioLength !== 'long');
+  document.querySelectorAll('[id^="edu-long-"]').forEach(e => e.classList.add('hidden'));
+  if (bioLength === 'long') {
+    const eduLong = document.getElementById('edu-long-' + bioVoice);
+    if (eduLong) eduLong.classList.remove('hidden');
+  }
   const btnS = document.getElementById('btn-short');
   const btnL = document.getElementById('btn-long');
   const btn1 = document.getElementById('btn-1st');
